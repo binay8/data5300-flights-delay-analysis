@@ -1,0 +1,84 @@
+---
+title: "project1-Flight Delays Analysis"
+author: "Binay Raut"
+date: "`r Sys.Date()`"
+output: html_document
+---
+This project will use the data included in the nycflights13 package. 
+
+Suppose you work for United Airlines (carrier code UA). To improve both efficiency and customer satisfaction, you've been asked to study departure delays. 
+
+Prepare a report that utilizes the exploratory data analysis methods that we have been studying, and permutation tests, to analyze departure delays. 
+
+This report should be written for a general audience, not a technical one. This means that you should be clearly explaining everything without assuming that the audience has any specialized knowledge. It also means that you should use clear words and phrases, rather than variable names, when labeling and discussing your plots and other results.
+
+Your report should address the relationship between departure delays and each of the following:
+
+Time of day
+Time of year
+Temperature
+Wind speed
+Precipitation
+Visibility
+For each of these factors, you can decide whether to use the original dep_delay variable, or the late and very_late variables you created for the first homework assignment (for some questions, you may only be able to conduct a permutation test (based on what we've learned so far) if you use the late and very_late variables). If there are circumstances where you feel it is appropriate to create new variables based on the other factors being analyzed, you may do so, but be sure to clearly indicate that you have done that. 
+
+Your report should include the following:
+
+Introduction. This should include an explanation of what you are investigating, what data you've used, and context for your work.
+Data Methodology. Describe how the data was prepared, cleaned, merged, etc. 
+Results. Include your exploratory data analysis and your permutation tests for each variable of interest, and discuss and interpret these results. 
+Discussion. Describe the overall take-aways from your study, and what future follow-up work might be of interest to expand on it. 
+
+
+# Introduction
+
+## Import Library and Data
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+```{r}
+glimpse(flights)
+```
+```{r}
+glimpse(weather)
+```
+
+
+# Data Cleansing
+## Filter
+
+## Merge
+* flights and weather datasets should be merged
+
+## Handle missing/erroneous values
+
+## Calculated columns
+
+# Exploratory Data Analysis
+## Summary statistics
+
+## Distribution of departure delays
+
+## Categorical analysis 
+## Time of day
+## Time of year
+## Temperature
+## Wind speed
+## Precipitation
+## Visibility
+
+# Statistical Analysis - Permutation Tests
+
+## Time of day
+## Time of year
+## Temperature
+## Wind speed
+## Precipitation
+## Visibility
+
+
+
+
