@@ -1,0 +1,99 @@
+---
+title: "5300- Group Project #1"
+author: "Nina Fossen"
+date: "2026-10-27"
+output: html_document
+---
+
+importing data
+```{r}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+
+library(nycflights13)
+
+```
+```{r}
+glimpse(weather)
+```
+```{r}
+glimpse(flights)
+```
+
+##setting up variables
+```{r}
+ua_delays <- flights %>%
+  filter(carrier == "UA")
+
+ua_delays['late'] <- ua_delays$dep_delay >0
+
+ua_delays['very_late'] <- ua_delays$dep_delay >30
+
+ua_delays<- ua_delays  %>%
+  select(-c(arr_time, sched_arr_time,tailnum,air_time, distance, ))
+  
+glimpse(ua_delays)
+```
+```{r}
+weather_ua <- weather %>%
+  select(-c(dewp, humid, wind_dir, wind_gust, pressure))
+
+glimpse(weather_ua)
+```
+
+##Merge Data
+```{r}
+ua_flights_weather <- ua_delays %>%
+  left_join(
+    weather_ua,
+    by = c("origin", "year", "month", "day", "hour")
+  )
+
+glimpse(weather_ua)
+```
+```{r}
+ua_flights_weather %>%
+  summarise(
+    total_flights = n(),
+    avg_delay = mean(dep_delay, na.rm = TRUE), 
+    sd_delay = sd(dep_delay, na.rm = TRUE)
+  )
+```
+## dealing with missing values
+```{r}
+ua_flights_weather %>%
+  summarise(
+    total_flights = n(),
+    dep_delay_miss = sum(is.na(dep_delay)),
+    temp_miss = sum(is.na(temp)),
+    wind_speed_miss = sum(is.na(wind_speed)),
+    precip_miss = sum(is.na(precip)),
+    visib_miss = sum(is.na(visib))
+  )
+```
+total UA flights = 58,665
+missing data
+  dep_delay = 686
+  temp = 311
+  wind_speed = 321
+  precip = 304
+  visib = 304
+
+keeping only rows without missing data
+```{r}
+ua_flights_weather <- ua_flights_weather %>%
+  drop_na()
+
+ua_flights_weather %>%
+  summarise(
+    total_flights = n(),
+    dep_delay_miss = sum(is.na(dep_delay)),
+    temp_miss = sum(is.na(temp)),
+    wind_speed_miss = sum(is.na(wind_speed)),
+    precip_miss = sum(is.na(precip)),
+    visib_miss = sum(is.na(visib))
+  )
+```
+  now only 57465 flights. Kept 97% of the original data.
+  
