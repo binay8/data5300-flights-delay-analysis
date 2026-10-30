@@ -86,6 +86,7 @@ The standard deviation of 35.72 suggests a large variation in departure delays.
 Take a look at missing values for our key data
 
 ```{r}
+
 ua_flights_weather |>
   summarise(
     total_flights = n(),
@@ -93,8 +94,13 @@ ua_flights_weather |>
     missing_temp = sum(is.na(temp)),
     missing_wind_speed = sum(is.na(wind_speed)),
     missing_precipitation = sum(is.na(precip)),
-    missing_visibility = sum(is.na(visib))
+    missing_visibility = sum(is.na(visib)),
+    missing_sched_dep_time = sum(is.na(sched_dep_time)),
+    missing_hour = sum(is.na(hour)),
+    missing_month = sum(is.na(month)),
+    missing_year = sum(is.na(year))
   )
+
 ```
 
 The merged dataset contains 58,665 United Airlines flight records. An examination of missing values indicates that the dataset is relatively complete. Departure delay has the most missing value with 686 observations missing. Missing values in weather related variables ranges from 304 to 321 observations. Overall, the low percentage of missing values suggests that most observations are available for analysis. However, additional examination is necessary to determine how missing observations should be handled before conducting exploratory analysis and permutation tests.
@@ -122,6 +128,32 @@ ua_flights_weather %>%
 Out of 58,665 total flight records, 1,003 (1.71%) contain at least one missing value among the five variables examined: departure delay, temperature, wind speed, precipitation, and visibility. The remaining 57,662 records (98.29%) are complete for these variables. Overall, the dataset has a relatively low proportion of missing observations.
 
 
+Remove rows with missing dependent variable (departure delay)
+
+```{r}
+ua_flights_weather <- ua_flights_weather %>%
+  drop_na(dep_delay)
+  
+```
+
+Check if all numerical predictors are missing from the dataset. Since we know the time of day and time of year is not missing any data, we can look at the missing variables from weather dataset. 
+
+```{r}
+ua_flights_weather %>%
+  summarise(
+    total_rows = n(),
+    all_predictors_missing = sum(
+      if_all(
+        c(temp, wind_speed, precip, visib),
+        is.na
+      )
+    )
+  )
+```
+After excluding flights with missing departure delays, 57,979 observations remained. Of these, 293 (0.51%) had missing values for all four weather variables: temperature, wind speed, precipitation, and visibility. These missing values may indicate that corresponding weather observations were unavailable or that the weather measurements themselves were incomplete.
+
+
+
 ## Calculated columns
 Create two calculated columns named late and very_late. 
 * late <- departure delays greater than 0 minutes
@@ -134,6 +166,40 @@ ua_flights_weather['very_late'] <- ua_flights_weather$dep_delay > 30
 ```{r}
 glimpse(ua_flights_weather)
 ```
+
+## Finalize dataset
+Keep only variables relevant to the research questions.
+```{r}
+
+ua_final <- ua_flights_weather %>%
+  select(
+    year,
+    month,
+    day,
+    hour,
+    sched_dep_time,
+    origin,
+    carrier,
+    flight,
+    dep_delay,
+    late,
+    very_late,
+    temp,
+    wind_speed,
+    precip,
+    visib
+  )
+
+glimpse(ua_final)
+```
+
+Save clean dataset for analysis
+
+```{r}
+saveRDS(ua_final, "../data/ua_final.rds")
+```
+
+
 
 
 # Exploratory Data Analysis
