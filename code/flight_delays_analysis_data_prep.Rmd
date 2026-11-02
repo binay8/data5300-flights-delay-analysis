@@ -209,22 +209,26 @@ saveRDS(ua_final, "../data/ua_final.rds")
 
 ## Categorical analysis 
 
-## Time of day
-## Time of year
-## Temperature
-## Wind speed
-## Precipitation
-## Visibility
+## Time of day <- Binay
+## Time of year <- Nina
+## Temperature <- Nina
+## Wind speed <- Binay
+## Precipitation <- Binay
+## Visibility <- Nina
+## Late ??
+## Very Late ??
 
 
 # Statistical Analysis - Permutation Tests
 
-## Time of day
-## Time of year
-## Temperature
-## Wind speed
-## Precipitation
-## Visibility
+## Time of day <- Binay
+## Time of year <- Nina
+## Temperature <- Nina
+## Wind speed <- Binay
+## Precipitation <- Binay
+## Visibility <- Nina
+## Late ??
+## Very Late ??
 
 
 
