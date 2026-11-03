@@ -453,6 +453,129 @@ sprintf("%.5f", p_precip_very_late)
 Two-sided permutation tests were conducted using 10,000 permutations to investigate whether the proportions of late and very late departures differed between wet and dry conditions. The observed proportion of late departures was 17.70 percentage points higher during wet conditions, while the proportion of very late departures was 12.55 percentage points higher. 
 Both tests produced estimated p-values of approximately 0.0001. At the 5% significance level, we reject both null hypotheses. The results provide strong statistical evidence that late and very late departure rates differ between wet and dry conditions, with higher observed rates during wet conditions.
 
+## Departure Delay and Time of Year
+
+During exploratory data analysis, we observed that departure delays varied across months, with particularly high delay rates during June, July, and December. 
+
+To investigate seasonal differences, group flights into summer (June–August) and winter (December–February) categories.
+### Research Question 1
+Is there a statistically significant difference in the proportion of late departures (more than 0 minutes late) between flights in summer months (June-August) and winter months (December-February?
+
+Null Hypothesis:The proportion of late departures is equal between summer and winter.
+Alternate Hypothesis: The proportion of late departures differs between summer and winter.
+
+
+### Research Question 2
+Is there a statistically significant difference in the proportion of very late departures (more than 30 minutes late) between flights in summer months (June-August) and winter months (December-February?
+
+Null Hypothesis:The proportion of very late departures is equal between summer and winter.
+Alternate Hypothesis: The proportion of very late departures differs between summer and winter.
+
+
+Create our dataset of analysis
+
+```{r}
+
+time_of_year_comparison <- ua_final %>%
+  mutate(
+    summer_winter = case_when(
+      month %in% c(6, 7, 8) ~ "Summer", # Assign Summer label if month is 6,7,8
+      month %in% c(12, 1, 2) ~ "Winter", # Assign Winter label if month is 12,1,2
+      TRUE ~ NA_character_ # Since there are other months, we assign "NA"
+    )
+  ) %>%
+  drop_na(summer_winter) # Filter out observation for other than summer or winter
+```
+
+
+Capture observed values
+```{r}
+observed_season_late_diff <- mean(
+  time_of_year_comparison$late[
+    time_of_year_comparison$summer_winter == "Summer"
+  ]
+) -
+mean(
+  time_of_year_comparison$late[
+    time_of_year_comparison$summer_winter == "Winter"
+  ]
+)
+
+observed_season_very_late_diff <- mean(
+  time_of_year_comparison$very_late[
+    time_of_year_comparison$summer_winter == "Summer"
+  ]
+) -
+mean(
+  time_of_year_comparison$very_late[
+    time_of_year_comparison$summer_winter == "Winter"
+  ]
+)
+
+observed_season_late_diff
+observed_season_very_late_diff
+```
+Simulate null distribution
+
+```{r}
+set.seed(5300)
+
+N <- 10^4
+
+perm_season_late_diff <- numeric(N)
+perm_season_very_late_diff <- numeric(N)
+
+for (i in 1:N) {
+
+  # Shuffle summer/winter labels
+  shuffled_group <- sample(
+    time_of_year_comparison$summer_winter
+  )
+
+  # Difference in late proportions
+  perm_season_late_diff[i] <- mean(
+    time_of_year_comparison$late[
+      shuffled_group == "Summer"
+    ]
+  ) -
+  mean(
+    time_of_year_comparison$late[
+      shuffled_group == "Winter"
+    ]
+  )
+
+  # Difference in very late proportions
+  perm_season_very_late_diff[i] <- mean(
+    time_of_year_comparison$very_late[
+      shuffled_group == "Summer"
+    ]
+  ) -
+  mean(
+    time_of_year_comparison$very_late[
+      shuffled_group == "Winter"
+    ]
+  )
+}
+```
+
+
+Calculate p-value
+```{r}
+p_season_late <- (
+  sum(abs(perm_season_late_diff) >=
+      abs(observed_season_late_diff)) + 1
+) / (N + 1)
+
+p_season_very_late <- (
+  sum(abs(perm_season_very_late_diff) >=
+      abs(observed_season_very_late_diff)) + 1
+) / (N + 1)
+
+sprintf("%.5f", p_season_late)
+sprintf("%.5f", p_season_very_late)
+```
+Two-sided permutation tests were conducted using 10,000 permutations to investigate if the proportions of late and very late departures differed between summer months and winter months. The observed proportion of late departures was 2.48 percentage points higher during summer compared with winter. Similarly, the proportion of very late departures was 5.04 percentage points higher during summer.
+Both permutation tests produced estimated p-values of approximately 0.0001. At the 5% significance level, we reject both null hypotheses. The results provide statistical evidence that the proportions of late and very late departures differ between summer and winter, with higher observed rates during summer.
 
 
 

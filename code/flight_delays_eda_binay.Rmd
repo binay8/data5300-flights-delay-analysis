@@ -389,7 +389,7 @@ glimpse(df)
 
 ```{r}
 
-month_summary <- df %>%
+monthly_summary <- df %>%
   group_by(month) %>%
   summarise(
     total_flights = n(),
