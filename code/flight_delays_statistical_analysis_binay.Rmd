@@ -30,7 +30,7 @@ The correlation coefficient between scheduled departure hour and departure delay
 
 During exploratory analysis, we noticed that flights leaving in the morning had less delays compared flights departing in the evening.
 
-Research Question:
+### Research Question:
 Is there a statistically significant difference in mean departure delays between United Airlines flights scheduled in the morning (before 12 PM) and those scheduled in the evening (6 PM or later)?
 
 Null hypothesis: Morning and evening departures have the same mean departure delay.
@@ -93,6 +93,7 @@ observed_diff
 Simulate null distribution
 ```{r}
 
+set.seed(5300)
 
 N <- 10^4
 
@@ -154,6 +155,170 @@ At the 5% significance level, we reject the null hypothesis. The results provide
 
 
 ## Departure delay and Wind Speed
+
+
+```{r}
+ua_final %>%
+  drop_na(wind_speed) %>%
+  summarise(
+    correlation = cor(wind_speed, dep_delay)
+  )
+```
+Weak positive correlation. 
+
+
+We previously used wind severity low, medium and high to categorize wind speed. For statistical analysis we will group wind speed at scheduled departure time into two categories: Low (Less than 10mph ), ModerateHigh (10mph and higher)
+
+### Research Question 1
+Is there a statistically significant difference in the proportion of late departures (more than 0 minutes late) between flights experiencing wind speeds below 10 mph and those experiencing wind speeds of 10 mph or greater?
+
+Null Hypothesis: The proportion of late departures is equal between low and high wind conditions.
+Alternative Hypothesis: The proportion of later departures differs between low and high wind conditions. 
+
+### Research Question 2
+Is there a statistically significant difference in the proportion of very late departures (more than 30 minutes late) between these two wind-speed groups?
+Null Hypothesis: The proportion of very late departures is equal between low and high wind conditions.
+Alternative Hypothesis: The proportion of very later departures differs between low and high wind conditions. 
+
+Create comparison dataset
+```{r}
+wind_comparison <- ua_final %>%
+  drop_na(wind_speed) |>
+  mutate(
+    wind_group = if_else(
+      wind_speed < 10,
+      "LowWind",
+      "ModerateHighWind"
+    )
+  )
+
+wind_comparison |>
+  count(wind_group)
+```
+Close to even distribution between high and low wind 
+
+
+Review summary statistics
+```{r}
+wind_summary <- wind_comparison |>
+  group_by(wind_group) |>
+  summarise(
+    total_flights = n(),
+    mean_delay = mean(dep_delay),
+    median_delay = median(dep_delay),
+    sd_delay = sd(dep_delay),
+    late_pct = mean(late) * 100,
+    very_late_pct = mean(very_late) * 100,
+    .groups = "drop"
+  )
+
+wind_summary
+```
+The two wind-speed groups contained similar numbers of observations, with 29,080 flights experiencing wind speeds below 10 mph during departure and 28,589 flights experiencing wind speeds of 10 mph or greater. Flights experiencing higher wind speeds had a slightly longer average departure delay (12.94 minutes) than those experiencing lower wind speeds (11.26 minutes). The percentage of late departures increased from 45.04% under lower-wind conditions to 48.93% under higher-wind conditions. Similarly, the percentage of very late departures increased from 12.37% to 13.89%.
+
+Overall, the descriptive results suggest a modest association between wind speed and departure delays. Permutation tests will be used to assess whether the differences in late and very late departure rates are statistically significant.
+
+
+
+
+```{r}
+observed_late_diff <- mean(
+  wind_comparison$late[
+    wind_comparison$wind_group == "ModerateHighWind"
+  ]
+) -
+mean(
+  wind_comparison$late[
+    wind_comparison$wind_group == "LowWind"
+  ]
+)
+
+
+observed_very_late_diff <- mean(
+  wind_comparison$very_late[
+    wind_comparison$wind_group == "ModerateHighWind"
+  ]
+) -
+mean(
+  wind_comparison$very_late[
+    wind_comparison$wind_group == "LowWind"
+  ]
+)
+
+
+observed_late_diff
+observed_very_late_diff
+
+```
+The observed proportion of late departures was 3.89 percentage points higher for flights experiencing wind speeds of 10 mph or greater compared with flights experiencing wind speeds below 10 mph. Similarly, the proportion of very late departures was 1.52 percentage points higher under higher-wind conditions.
+
+Simulate null distribution for proportions of late and very late flights
+
+```{r}
+set.seed(5300)
+
+N <- 10^4
+
+# Store simulated differences for each outcome
+perm_late_diff <- numeric(N)
+perm_very_late_diff <- numeric(N)
+
+for (i in 1:N) {
+
+  # Randomly shuffle wind group labels
+  shuffled_group <- sample(wind_comparison$wind_group)
+
+  # Difference in proportion of late departures
+  perm_late_diff[i] <- mean(
+    wind_comparison$late[
+      shuffled_group == "ModerateHighWind"
+    ]
+  ) - mean(
+    wind_comparison$late[
+      shuffled_group == "LowWind"
+    ]
+  )
+
+  # Difference in proportion of very late departures
+  perm_very_late_diff[i] <- mean(
+    wind_comparison$very_late[
+      shuffled_group == "ModerateHighWind"
+    ]
+  ) - mean(
+    wind_comparison$very_late[
+      shuffled_group == "LowWind"
+    ]
+  )
+}
+```
+
+Calculate P-values
+
+```{r}
+p_late <- (sum(abs(perm_late_diff) >= abs(observed_late_diff)) + 1) / (N + 1)
+
+p_very_late <- (sum(abs(perm_very_late_diff) >= abs(observed_very_late_diff)) + 1) / (N + 1)
+
+# Display results
+
+sprintf("%.5f", p_late)
+sprintf("%.5f", p_very_late)
+
+```
+
+```{r}
+sum(abs(perm_late_diff) >= abs(observed_late_diff))
+
+sum(abs(perm_very_late_diff) >= abs(observed_very_late_diff))
+```
+```{r}
+mean(perm_late_diff)
+mean(perm_very_late_diff)
+```
+Two-sided permutation tests were conducted to investigate differences in late and very late departure rates between flights experiencing wind speeds below 10 mph and those experiencing wind speeds of 10 mph or greater. The proportion of late departures was 3.89 percentage points higher under higher-wind conditions, while the proportion of very late departures was 1.52 percentage points higher.
+After 10,000 permutations, neither test produced a simulated difference as extreme as its observed difference. The estimated p-value was approximately 0.0001 for both tests.
+At the 5% significance level, we reject both null hypotheses. The results provide statistical evidence of differences in late and very late departure proportions between the two wind-speed groups.
+
 
 
 
