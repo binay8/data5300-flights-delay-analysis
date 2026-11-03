@@ -320,9 +320,19 @@ After 10,000 permutations, neither test produced a simulated difference as extre
 At the 5% significance level, we reject both null hypotheses. The results provide statistical evidence of differences in late and very late departure proportions between the two wind-speed groups.
 
 
+## Departure Delay and Precipitation
 
 
-## Precipitation
+```{r}
+ua_final %>%
+  drop_na(precip) %>%
+  summarise(
+    correlation = cor(precip, dep_delay)
+  )
+```
+There is a weak correlation between precipitation and departure delays. 
+
+
 
 ```{r}
 precip_test <- ua_final%>%
@@ -333,8 +343,117 @@ precip_test %>%
   group_by(wet_dry) %>%
   summarise(
     n = n(),
+    late_rate = mean(late),
     very_late_rate = mean(very_late),
     .groups = "drop"
   )
 ```
+
+During exploratory analysis we found that the percentage of flight late and very late was higher when there was percipitaiton (wet conditions) versus when there was no precipitation (dry conditions).
+
+### Research Question 1
+Is there a statistically significant difference in the proportion of late departures (more than 0 minutes late) between flights experiencing precipitation (wet conditions) and those experiencing dry condition?
+
+Null Hypothesis: The proportion of late departures is equal between dry (where there is no precipitation) and wet conditions (where there is any precipitation).
+Alternative Hypothesis: The proportion of late departures differs between dry and wet conditions. 
+
+### Research Question 2
+Is there a statistically significant difference in the proportion of very late departures (more than 0 minutes late) between flights experiencing precipitation (wet conditions) and those experiencing dry condition?
+
+Null Hypothesis: The proportion of very late departures is equal between dry (where there is no precipitation) and wet conditions (where there is any precipitation).
+Alternative Hypothesis: The proportion of very late departures differs between dry and wet conditions.
+
+
+
+```{r}
+observed_precip_late_diff <- mean(
+  precip_test$late[
+    precip_test$wet_dry == "Wet"
+  ]
+) -
+mean(
+  precip_test$late[
+    precip_test$wet_dry == "Dry"
+  ]
+)
+
+
+observed_precip_very_late_diff <- mean(
+  precip_test$very_late[
+    precip_test$wet_dry == "Wet"
+  ]
+) -
+mean(
+  precip_test$very_late[
+    precip_test$wet_dry == "Dry"
+  ]
+)
+
+
+observed_precip_late_diff
+observed_precip_very_late_diff
+```
+The observed proportion of late departures was 17.70 percentage points higher for flights experiencing wet conditions compared with flights departing during dry. Similarly, the proportion of very late departures was 12.55 percentage points higher under wet conditions.
+
+Simulate null distribution of late vs very late flights during wet and dry conditions. 
+
+```{r}
+set.seed(5300)
+
+N <- 10^4
+
+# Store simulated differences for each outcome
+perm_precip_late_diff <- numeric(N)
+perm_precip_very_late_diff <- numeric(N)
+
+for (i in 1:N) {
+
+  # Randomly shuffle Wet-Dry labels
+  shuffled_group <- sample(precip_test$wet_dry)
+
+  # Difference in proportion of late departures
+  perm_precip_late_diff[i] <- mean(
+    precip_test$late[
+      shuffled_group == "Wet"
+    ]
+  ) - mean(
+    precip_test$late[
+      shuffled_group == "Dry"
+    ]
+  )
+
+  # Difference in proportion of very late departures
+  perm_precip_very_late_diff[i] <- mean(
+    precip_test$very_late[
+      shuffled_group == "Wet"
+    ]
+  ) - mean(
+    precip_test$very_late[
+      shuffled_group == "Dry"
+    ]
+  )
+}
+```
+
+
+Calculate p-value
+
+```{r}
+p_precip_late <- (sum(abs(perm_precip_late_diff) >= abs(observed_precip_late_diff)) + 1) / (N + 1)
+
+p_precip_very_late <- (sum(abs(perm_precip_very_late_diff) >= abs(observed_precip_very_late_diff)) + 1) / (N + 1)
+
+# Display results
+
+sprintf("%.5f", p_precip_late)
+sprintf("%.5f", p_precip_very_late)
+
+```
+
+Two-sided permutation tests were conducted using 10,000 permutations to investigate whether the proportions of late and very late departures differed between wet and dry conditions. The observed proportion of late departures was 17.70 percentage points higher during wet conditions, while the proportion of very late departures was 12.55 percentage points higher. 
+Both tests produced estimated p-values of approximately 0.0001. At the 5% significance level, we reject both null hypotheses. The results provide strong statistical evidence that late and very late departure rates differ between wet and dry conditions, with higher observed rates during wet conditions.
+
+
+
+
 
