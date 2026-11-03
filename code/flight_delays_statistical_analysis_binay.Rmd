@@ -167,7 +167,7 @@ ua_final %>%
 Weak positive correlation. 
 
 
-We previously used wind severity low, medium and high to categorize wind speed. For statistical analysis we will group wind speed at scheduled departure time into two categories: Low (Less than 10mph ), ModerateHigh (10mph and higher)
+We previously used wind severity low, medium and high to categorize wind speed. For statistical analysis we will group wind speed at scheduled departure time into two categories: Low (Less than 10mph ), ModerateHigh (10mph and higher). We are choosing 10mph threshold so we have an approximately even distribution of flights for low and higher wind level. 
 
 ### Research Question 1
 Is there a statistically significant difference in the proportion of late departures (more than 0 minutes late) between flights experiencing wind speeds below 10 mph and those experiencing wind speeds of 10 mph or greater?
@@ -358,7 +358,7 @@ Null Hypothesis: The proportion of late departures is equal between dry (where t
 Alternative Hypothesis: The proportion of late departures differs between dry and wet conditions. 
 
 ### Research Question 2
-Is there a statistically significant difference in the proportion of very late departures (more than 0 minutes late) between flights experiencing precipitation (wet conditions) and those experiencing dry condition?
+Is there a statistically significant difference in the proportion of very late departures (more than 30 minutes late) between flights experiencing precipitation (wet conditions) and those experiencing dry condition?
 
 Null Hypothesis: The proportion of very late departures is equal between dry (where there is no precipitation) and wet conditions (where there is any precipitation).
 Alternative Hypothesis: The proportion of very late departures differs between dry and wet conditions.

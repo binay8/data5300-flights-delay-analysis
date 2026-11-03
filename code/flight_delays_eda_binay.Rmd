@@ -26,7 +26,7 @@ df <- readRDS("../data/ua_final.rds")
 glimpse(df)
 ```
 
-## Time of day <- Binay
+## Exploratory analysis of Time of day 
 
 ```{r}
 hourly_summary <- df %>%
@@ -378,4 +378,95 @@ precip_summary %>%
 ```
 
 The chart shows that United Airlines flights scheduled during wet conditions experienced higher rates of both late and very late departures compared with flights scheduled during dry conditions.  
+
+## Exploratory analysis of Time of year
+
+```{r}
+glimpse(df)
+```
+
+
+
+```{r}
+
+month_summary <- df %>%
+  group_by(month) %>%
+  summarise(
+    total_flights = n(),
+    mean_delay = mean(dep_delay),
+    median_delay = median(dep_delay),
+    sd_delay = sd(dep_delay),
+    late_pct = mean(late) * 100,
+    very_late_pct = mean(very_late) * 100,
+    .groups = "drop"
+  )
+
+
+monthly_summary %>%
+  mutate(month= month.name[month]) %>%
+  knitr::kable(
+    digits = 2,
+    col.names = c(
+      "Month",
+      "Total Flights (count)",
+      "Mean Delay (minutes)",
+      "Median Delay (minutes)",
+      "SD Delay (minutes)",
+      "Late (%)",
+      "Very Late (%)"
+    ),
+    caption = "Departure Delays by Month"
+  )
+
+```
+
+```{r}
+monthly_summary %>%
+  ggplot(aes(x = factor(month), y = mean_delay)) +
+  geom_col(fill = "blue") +
+  labs(
+    title = "Average Departure Delay by Month",
+    subtitle = "United Airlines Flights, 2013",
+    x = "Month",
+    y = "Average Departure Delay (Minutes)"
+  ) +
+  scale_x_discrete(labels = month.abb)
+```
+```{r}
+monthly_summary %>%
+  ggplot(aes(x = month)) +
+  geom_line(
+    aes(y = late_pct, color = "Late"),
+    linewidth = 1
+  ) +
+  geom_line(
+    aes(y = very_late_pct, color = "Very Late"),
+    linewidth = 1
+  ) +
+  geom_point(
+    aes(y = late_pct, color = "Late"),
+    size = 2
+  ) +
+  geom_point(
+    aes(y = very_late_pct, color = "Very Late"),
+    size = 2
+  ) +
+  scale_x_continuous(
+    breaks = 1:12,
+    labels = month.abb
+  ) +
+  labs(
+    title = "Late vs Very Late Departures by Month",
+    x = "Month",
+    y = "Percentage of Flights",
+    color = "Late vs Very Late"
+  ) 
+```
+
+
+Number of flights are approximately evenly distributed between all 12 months. Departure delays varied throughout the year. June and July experienced the longest average departure delays, at approximately 20 minutes. Additionally, June and July also had the one of the highest percentages of late and very late departures, with over 56% of flights departing late and approximately 20% of flights departing more than 30 minutes late. The month of December also had a high percentage of delays with an average delay of 17.72 minutes. December had the highest percentage of flights late with 64.68% of flights late.   
+September, October, and November experienced shorter average delays of around 6 to 7 minutes and lower rates of late and very late delays.
+This shows that departure delays and proportion of late and very late delays are higher during early summer months and December.
+
+
 
