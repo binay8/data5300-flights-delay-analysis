@@ -469,4 +469,168 @@ September, October, and November experienced shorter average delays of around 6 
 This shows that departure delays and proportion of late and very late delays are higher during early summer months and December.
 
 
+## Exploratory analysis of Temperature
+
+Prepare dataset for analysis of temperature as it relates to departure delay
+```{r}
+temperature_data <- df %>%
+  drop_na(temp)
+```
+
+Review summary statistics. 
+```{r}
+temperature_data %>%
+  summarise(
+    total_flights = n(),
+    min_temp = min(temp),
+    max_temp = max(temp),
+    mean_temp = mean(temp),
+    median_temp = median(temp),
+    sd_temp = sd(temp)
+  )
+```
+
+```{r}
+temperature_data %>%
+  ggplot(aes(x = temp)) +
+  geom_histogram(
+    binwidth = 5,
+    fill = "blue",
+    color = "white"
+  ) +
+  labs(
+    title = "Distribution of Temperatures",
+    subtitle = "United Airlines Departures, 2013",
+    x = "Temperature (°F)",
+    y = "Number of Flights"
+  ) 
+```
+
+Most United Airlines flights occurred at temperatures between approximately 30°F and 85°F, with relatively few flights experiencing extremely cold or hot conditions. The mean and median temperatures were approximately 57°F and 58°F, respectively. The distribution of flights across temperature was generally uniform.
+
+
+Temperature and Departure delaty
+
+```{r}
+temperature_data %>%
+  ggplot(aes(x = temp, y = dep_delay)) +
+  geom_point(alpha = 0.2, color = "blue") +
+  labs(
+    title = "Temperature vs Departure Delay",
+    x = "Temperature (°F)",
+    y = "Departure Delay (Minutes)"
+  ) 
+```
+
+No strong linear relationship between temperature and departure delay. 
+
+Group temperature into categories
+
+```{r}
+temperature_data <- temperature_data %>%
+  mutate(
+    temp_category = case_when(
+      temp < 40 ~ "Cold",
+      temp < 80 ~ "Moderate",
+      TRUE ~ "Hot"
+    )
+  )
+```
+
+View summary by temperature category
+
+```{r}
+temp_summary <- temperature_data %>%
+  group_by(temp_category) %>%
+  summarise(
+    total_flights = n(),
+    mean_delay = mean(dep_delay),
+    median_delay = median(dep_delay),
+    late_pct = mean(late) * 100,
+    very_late_pct = mean(very_late) * 100,
+    .groups = "drop"
+  )
+
+temp_summary
+```
+Departure delays varied across temperature categories. Flights departing under hot conditions (80°F or higher) experienced the longest average delays, approximately 20.27 minutes, compared with 11.23 minutes under moderate conditions and 9.94 minutes under cold conditions.
+Hot conditions also had the highest proportions of late and very late departures, at 57.62% and 19.25%, respectively. In contrast, moderate temperatures had the lowest proportion of late departures, at approximately 44.69%.
+These findings suggest an association between higher temperatures and increased departure delays. 
+
+
+## Exploratory analysis of Visibility
+
+Prepare dataset for analysis of visibility as it relates to departure delay
+```{r}
+visibility_data <- ua_final %>%
+  drop_na(visib)
+```
+
+Calculate summary statistics for visibility
+
+```{r}
+visibility_data %>%
+  summarise(
+    total_flights = n(),
+    min_visib = min(visib),
+    max_visib = max(visib),
+    mean_visib = mean(visib),
+    median_visib = median(visib),
+    sd_visib = sd(visib)
+  )
+```
+* Observations ranged from 0 to 10 miles, with a mean of approximately 9.27 miles and a median of 10 miles. 
+
+
+Analyze distribution of flights by visibility conditions. Normal visibility being 10 mph and higher. Reduced visibility being less than 10 mph. 
+
+```{r}
+visibility_data %>%
+  summarise(
+    total_flights = n(),
+    normal_visibility = sum(visib == 10),
+    reduced_visibility = sum(visib < 10),
+    pct_normal = mean(visib == 10) * 100,
+    pct_reduced = mean(visib < 10) * 100
+  )
+```
+Of the 57,686 United Airlines flights with available visibility observations, approximately 83% occurred when visibility was recorded at 10 miles, while 17% occurred under reduced visibility conditions (below 10 miles). 
+
+Departure delay vs Visibility
+```{r}
+visibility_data <- visibility_data %>%
+  mutate(
+    visibility_group = if_else(
+      visib < 10,
+      "Reduced",
+      "Normal"
+    )
+  )
+
+visibility_summary <- visibility_data %>%
+  group_by(visibility_group) %>%
+  summarise(
+    total_flights = n(),
+    mean_delay = mean(dep_delay),
+    median_delay = median(dep_delay),
+    late_pct = mean(late) * 100,
+    very_late_pct = mean(very_late) * 100,
+    .groups = "drop"
+  )
+
+visibility_summary
+```
+
+Departure delays varied between normal and reduced visibility conditions. Flights operating under reduced visibility experienced longer average departure delays of approximately 17.03 minutes, compared with 11.08 minutes under normal recorded visibility. Additionally, the proportion of late departures was also higher under reduced visibility, at 51.31%, compared with 46.08% under normal visibility. Similarly, very late departures occurred in 17.47% of flights under reduced visibility, compared with 12.23% under normal visibility. Overall, the results suggest that reduced visibility is associated with longer and more frequent departure delays. 
+
+
+
+
+
+
+
+
+
+
+
 

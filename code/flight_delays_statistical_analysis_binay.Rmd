@@ -453,6 +453,72 @@ sprintf("%.5f", p_precip_very_late)
 Two-sided permutation tests were conducted using 10,000 permutations to investigate whether the proportions of late and very late departures differed between wet and dry conditions. The observed proportion of late departures was 17.70 percentage points higher during wet conditions, while the proportion of very late departures was 12.55 percentage points higher. 
 Both tests produced estimated p-values of approximately 0.0001. At the 5% significance level, we reject both null hypotheses. The results provide strong statistical evidence that late and very late departure rates differ between wet and dry conditions, with higher observed rates during wet conditions.
 
+
+Bootstrap the difference in late proportions
+
+```{r}
+# Separate late-departure outcomes by precipitation group
+wet_late <- precip_test$late[
+  precip_test$wet_dry == "Wet"
+]
+
+dry_late <- precip_test$late[
+  precip_test$wet_dry == "Dry"
+]
+
+# Observed difference (Wet - Dry)
+observed_diff <- mean(wet_late) - mean(dry_late)
+
+# Bootstrap simulation
+set.seed(5300)
+B <- 10^4
+
+boot_diff <- numeric(B)
+
+for (i in 1:B) {
+
+  boot_wet <- sample(wet_late, replace = TRUE)
+  boot_dry <- sample(dry_late, replace = TRUE)
+
+  boot_diff[i] <- mean(boot_wet) - mean(boot_dry)
+}
+```
+
+
+```{r}
+# 95% percentile bootstrap confidence interval
+boot_ci <- quantile(
+  boot_diff,
+  probs = c(0.025, 0.975)
+)
+
+data.frame(
+  Observed_Difference = observed_diff * 100,
+  CI_Lower = boot_ci[1] * 100,
+  CI_Upper = boot_ci[2] * 100
+)
+```
+
+```{r}
+hist(
+  boot_diff * 100,
+  breaks = 40,
+  main = "Bootstrap Distribution of Late-Departure Difference",
+  xlab = "Difference in Late Departure Rates (Percentage Points)",
+  col = "green",
+)
+
+abline(
+  v = boot_ci * 100,
+  col = "red",
+  lty = 2,
+  lwd = 2
+)
+```
+United Airlines flights departing during wet conditions were 17.70 percentage points more likely to depart late than flights departing during dry conditions.
+A 95% bootstrap confidence interval estimated the difference to be between 16.16 and 19.23 percentage points. This provides additional evidence that the observed difference is substantial rather than simply statistically significant.
+
+
 ## Departure Delay and Time of Year
 
 During exploratory data analysis, we observed that departure delays varied across months, with particularly high delay rates during June, July, and December. 
@@ -576,6 +642,114 @@ sprintf("%.5f", p_season_very_late)
 ```
 Two-sided permutation tests were conducted using 10,000 permutations to investigate if the proportions of late and very late departures differed between summer months and winter months. The observed proportion of late departures was 2.48 percentage points higher during summer compared with winter. Similarly, the proportion of very late departures was 5.04 percentage points higher during summer.
 Both permutation tests produced estimated p-values of approximately 0.0001. At the 5% significance level, we reject both null hypotheses. The results provide statistical evidence that the proportions of late and very late departures differ between summer and winter, with higher observed rates during summer.
+
+    
+## Departure Delay and Temperature
+
+Exploratory analysis suggest an association between higher temperatures and increased departure delays. 
+
+### Research Question 1
+Is there a statistically significant difference in the proportion of late departures between hot and moderate temperature conditions?
+Null Hypothesis: The proportion of late departures is equal between hot and moderate conditions.
+Alternate Hypothesis: The proportions differ between the two conditions.
+
+### Research Question 2
+Is there a statistically significant difference in the proportion of very late departures (more than 30 minutes late) between hot and moderate conditions?
+Null Hypothesis: The proportion of very late departures is equal between hot and moderate conditions.
+Alternate Hypothesis: The proportions differ between the two conditions.
+
+
+```{r}
+temp_test <- ua_final %>%
+  drop_na(temp) %>%
+  mutate(
+    temp_category = case_when(
+      temp < 40 ~ "Cold",
+      temp < 80 ~ "Moderate",
+      TRUE ~ "Hot"
+    )
+  ) %>%
+  filter(temp_category %in% c("Moderate", "Hot"))
+```
+
+Calculate observed differences
+
+```{r}
+# Difference in late departure proportions
+observed_temp_late_diff <- mean(
+  temp_test$late[temp_test$temp_category == "Hot"]
+) -
+mean(
+  temp_test$late[temp_test$temp_category == "Moderate"]
+)
+
+# Difference in very late departure proportions
+observed_temp_very_late_diff <- mean(
+  temp_test$very_late[temp_test$temp_category == "Hot"]
+) -
+mean(
+  temp_test$very_late[temp_test$temp_category == "Moderate"]
+)
+
+observed_temp_late_diff
+observed_temp_very_late_diff
+```
+* Late departure difference of approximately 12.93%.
+* Very late departure difference of approximately 6.64%.
+
+Perform Permutation test
+
+```{r}
+set.seed(5300)
+
+N <- 10^4
+
+perm_temp_late_diff <- numeric(N)
+perm_temp_very_late_diff <- numeric(N)
+
+for (i in 1:N) {
+
+  # Shuffle temperature labels
+  shuffled_group <- sample(temp_test$temp_category)
+
+  # Late departure difference
+  perm_temp_late_diff[i] <- mean(
+    temp_test$late[shuffled_group == "Hot"]
+  ) -
+  mean(
+    temp_test$late[shuffled_group == "Moderate"]
+  )
+
+  # Very late departure difference
+  perm_temp_very_late_diff[i] <- mean(
+    temp_test$very_late[shuffled_group == "Hot"]
+  ) -
+  mean(
+    temp_test$very_late[shuffled_group == "Moderate"]
+  )
+}
+```
+
+
+
+```{r}
+p_temp_late <- (
+  sum(abs(perm_temp_late_diff) >=
+      abs(observed_temp_late_diff)) + 1
+) / (N + 1)
+
+p_temp_very_late <- (
+  sum(abs(perm_temp_very_late_diff) >=
+      abs(observed_temp_very_late_diff)) + 1
+) / (N + 1)
+
+sprintf("%.5f", p_temp_late)
+sprintf("%.5f", p_temp_very_late)
+```
+
+Two-sided permutation tests were conducted using 10,000 permutations to compare late and very late departure rates between hot conditions (80°F or higher) and moderate conditions (40°F to below 80°F). Flights departing under hot conditions had a late-departure rate approximately 12.93 percentage points higher than flights departing under moderate conditions. Similarly, the proportion of very late departures was 6.64 percentage points higher during hot conditions.
+Both tests produced estimated p-values of approximately 0.0001. At the 5% significance level, we reject both null hypotheses. These results provide statistical evidence of differences in late and very late departure rates between the two temperature categories under the permutation-test assumptions.
+
 
 
 
