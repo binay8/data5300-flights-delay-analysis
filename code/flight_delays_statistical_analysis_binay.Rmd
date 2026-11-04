@@ -751,6 +751,65 @@ Two-sided permutation tests were conducted using 10,000 permutations to compare 
 Both tests produced estimated p-values of approximately 0.0001. At the 5% significance level, we reject both null hypotheses. These results provide statistical evidence of differences in late and very late departure rates between the two temperature categories under the permutation-test assumptions.
 
 
+## Departure Delay and Visibility
+
+Exploratory analysis showed that departure delays varied between normal and reduced visibility conditions.
+
+### Research Question 1
+Is there a statistically significant difference in the proportion of late departures between flights experiencing reduced visibility and those experiencing normal visibility?
+Null Hypothesis: The proportion of late departures is equal between reduced and normal visibility conditions.
+Alternate Hypothesis: The proportion of late departures differs between reduced and normal visibility conditions.
 
 
+### Research Question 2
+Is there a statistically significant difference in the proportion of very late departures between flights experiencing reduced visibility and those experiencing normal visibility?
+
+Null Hypothesis: The proportion of very late departures is equal between reduced and normal visibility conditions.
+Alternate Hypothesis: The proportion of very late departures differs between reduced and normal visibility conditions.
+
+
+Create dataset for analysis
+```{r}
+
+visibility_test <- ua_final %>%
+  drop_na(visib) %>%
+  mutate(
+    visibility_category = case_when(
+      visib < 10 ~ "Reduced",
+      TRUE ~ "Normal"
+    )
+  )
+
+```
+
+Calculate observed differences
+
+```{r}
+# Difference in late departure proportions
+observed_visib_late_diff <- mean(
+  visibility_test$late[
+    visibility_test$visibility_category == "Reduced"
+  ]
+) -
+mean(
+  visibility_test$late[
+    visibility_test$visibility_category == "Normal"
+  ]
+)
+
+# Difference in very late departure proportions
+observed_visib_very_late_diff <- mean(
+  visibility_test$very_late[
+    visibility_test$visibility_category == "Reduced"
+  ]
+) -
+mean(
+  visibility_test$very_late[
+    visibility_test$visibility_category == "Normal"
+  ]
+)
+
+observed_visib_late_diff
+observed_visib_very_late_diff
+```
 
