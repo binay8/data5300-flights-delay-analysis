@@ -87,7 +87,7 @@ Take a look at missing values for our key data
 
 ```{r}
 
-ua_flights_weather |>
+ua_flights_weather %>%
   summarise(
     total_flights = n(),
     missing_hour = sum(is.na(hour)),
@@ -97,7 +97,17 @@ ua_flights_weather |>
     missing_wind_speed = sum(is.na(wind_speed)),
     missing_precipitation = sum(is.na(precip)),
     missing_visibility = sum(is.na(visib))
+  ) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "Variable",
+    values_to = "Count"
+  ) %>%
+  knitr::kable(
+    col.names = c("Variable", "Count"),
+    caption = "Summary of Missing Values in UA Flight Data"
   )
+
 
 ```
 
@@ -200,33 +210,6 @@ saveRDS(ua_final, "../data/ua_final.rds")
 
 
 
-# Exploratory Data Analysis
-## Summary statistics
-
-## Distribution of departure delays
-
-## Categorical analysis 
-
-## Time of day <- Binay
-## Time of year <- Nina
-## Temperature <- Nina
-## Wind speed <- Binay
-## Precipitation <- Binay
-## Visibility <- Nina
-## Late ??
-## Very Late ??
-
-
-# Statistical Analysis - Permutation Tests
-
-## Time of day <- Binay
-## Time of year <- Nina
-## Temperature <- Nina
-## Wind speed <- Binay
-## Precipitation <- Binay
-## Visibility <- Nina
-## Late ??
-## Very Late ??
 
 
 

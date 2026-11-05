@@ -240,6 +240,23 @@ wind_summary <- wind_speed_df |>
 wind_summary
 ```
 
+```{r}
+wind_summary %>%
+  knitr::kable(
+    digits = 2,
+    col.names = c(
+      "Wind Category",
+      "Total Flights",
+      "Mean Delay (min)",
+      "Median Delay (min)",
+      "Late (%)",
+      "Very Late (%)"
+    ),
+    caption = "Departure Delays by Wind Category"
+  )
+```
+
+
 * As observed earlier, very low number of flights when the wind speed is in high category
 * percentage of late and very late flights relatively similar. As the severity rises from low to moderate, the percentage of late and very late flights increases.
 
@@ -362,7 +379,7 @@ precip_summary %>%
       late_pct = "Late",
       very_late_pct = "Very Late"
     )
-  ) %>%
+  ) %>% 
   ggplot(aes(
     x = wet_dry,
     y = percentage,
@@ -499,7 +516,7 @@ temperature_data %>%
   ) +
   labs(
     title = "Distribution of Temperatures",
-    x = "Temperature (°F)",
+    x = "Temperature (F)",
     y = "Number of Flights"
   ) 
 ```
@@ -551,6 +568,25 @@ temp_summary <- temperature_data %>%
 
 temp_summary
 ```
+
+```{r}
+temp_summary %>%
+  knitr::kable(
+    digits = 2,
+    col.names = c(
+      "Temperature Category",
+      "Total Flights",
+      "Mean Delay (min)",
+      "Median Delay (min)",
+      "Late (%)",
+      "Very Late (%)"
+    ),
+    caption = "Departure Delays by Temperature Category"
+  )
+```
+
+
+
 Departure delays varied across temperature categories. Flights departing under hot conditions (80°F or higher) experienced the longest average delays, approximately 20.27 minutes, compared with 11.23 minutes under moderate conditions and 9.94 minutes under cold conditions.
 Hot conditions also had the highest proportions of late and very late departures, at 57.62% and 19.25%, respectively. In contrast, moderate temperatures had the lowest proportion of late departures, at approximately 44.69%.
 These findings suggest an association between higher temperatures and increased departure delays. 
@@ -580,7 +616,7 @@ visibility_data %>%
 * Observations ranged from 0 to 10 miles, with a mean of approximately 9.27 miles and a median of 10 miles. 
 
 
-Analyze distribution of flights by visibility conditions. Normal visibility being 10 mph and higher. Reduced visibility being less than 10 mph. 
+Analyze distribution of flights by visibility conditions. Normal visibility being 10 miles and higher. Reduced visibility being less than 10 mph. 
 
 ```{r}
 visibility_data %>%
@@ -619,7 +655,24 @@ visibility_summary <- visibility_data %>%
 visibility_summary
 ```
 
-Departure delays varied between normal and reduced visibility conditions. Flights operating under reduced visibility experienced longer average departure delays of approximately 17.03 minutes, compared with 11.08 minutes under normal recorded visibility. Additionally, the proportion of late departures was also higher under reduced visibility, at 51.31%, compared with 46.08% under normal visibility. Similarly, very late departures occurred in 17.47% of flights under reduced visibility, compared with 12.23% under normal visibility. Overall, the results suggest that reduced visibility is associated with longer and more frequent departure delays. 
+```{r}
+visibility_summary %>%
+  knitr::kable(
+    digits = 2,
+    col.names = c(
+      "Visibility Condition",
+      "Total Flights",
+      "Mean Delay (min)",
+      "Median Delay (min)",
+      "Late (%)",
+      "Very Late (%)"
+    ),
+    caption = "Departure Delays by Visibility Condition"
+  )
+```
+
+
+Flights operating under reduced visibility experienced longer average departure delays of approximately 17.03 minutes, compared with 11.08 minutes under normal recorded visibility. Additionally, the proportion of late departures was also higher under reduced visibility, at 51.31%, compared with 46.08% under normal visibility. Similarly, very late departures occurred in 17.47% of flights under reduced visibility, compared with 12.23% under normal visibility. Overall, the results suggest that reduced visibility is associated with longer and more frequent departure delays. 
 
 
 
