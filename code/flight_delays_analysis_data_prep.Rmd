@@ -90,15 +90,13 @@ Take a look at missing values for our key data
 ua_flights_weather |>
   summarise(
     total_flights = n(),
+    missing_hour = sum(is.na(hour)),
+    missing_month = sum(is.na(month)),
     missing_dep_delay = sum(is.na(dep_delay)),
     missing_temp = sum(is.na(temp)),
     missing_wind_speed = sum(is.na(wind_speed)),
     missing_precipitation = sum(is.na(precip)),
-    missing_visibility = sum(is.na(visib)),
-    missing_sched_dep_time = sum(is.na(sched_dep_time)),
-    missing_hour = sum(is.na(hour)),
-    missing_month = sum(is.na(month)),
-    missing_year = sum(is.na(year))
+    missing_visibility = sum(is.na(visib))
   )
 
 ```

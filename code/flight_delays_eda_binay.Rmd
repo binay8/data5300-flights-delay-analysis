@@ -426,7 +426,6 @@ monthly_summary %>%
   geom_col(fill = "blue") +
   labs(
     title = "Average Departure Delay by Month",
-    subtitle = "United Airlines Flights, 2013",
     x = "Month",
     y = "Average Departure Delay (Minutes)"
   ) +
@@ -500,7 +499,6 @@ temperature_data %>%
   ) +
   labs(
     title = "Distribution of Temperatures",
-    subtitle = "United Airlines Departures, 2013",
     x = "Temperature (°F)",
     y = "Number of Flights"
   ) 
