@@ -18,7 +18,7 @@ ua_final <- readRDS("../data/ua_final.rds")
 Is there a simple correlation between departure delays and time of day?
 
 ```{r}
-ua_final |>
+ua_final %>%
   summarise(
     correlation = cor(hour, dep_delay)
   )
@@ -42,20 +42,19 @@ Create our dataset for group comparision.
 time_of_day_comparison <- ua_final %>%
   mutate(
     morning_evening = case_when(
-      hour >= 0 & hour < 12 ~ "Morning", # flights between midnight and 12  
+      hour >= 0 & hour < 12 ~ "Morning", # flights between midnight and 12
       hour >= 18 & hour <= 23 ~ "Evening",
       TRUE ~ NA_character_
     )
   ) %>%
   drop_na(morning_evening)
-
 ```
 
 Review summary statistics
 
 ```{r}
-time_summary <- time_of_day_comparison |>
-  group_by(morning_evening) |>
+time_summary <- time_of_day_comparison %>%
+  group_by(morning_evening) %>%
   summarise(
     total_flights = n(),
     mean_delay = mean(dep_delay),
@@ -75,25 +74,22 @@ Evening flight experiences average delay of 22.77 minutes compared to 4.61 minut
 Calculate observed difference in mean between evening and morning
 
 ```{r}
-
 observed_diff <- mean(
   time_of_day_comparison$dep_delay[
     time_of_day_comparison$morning_evening == "Evening"
   ]
 ) -
-mean(
-  time_of_day_comparison$dep_delay[
-    time_of_day_comparison$morning_evening == "Morning"
-  ]
-)
+  mean(
+    time_of_day_comparison$dep_delay[
+      time_of_day_comparison$morning_evening == "Morning"
+    ]
+  )
 
 observed_diff
-
 ```
 
 Simulate null distribution
 ```{r}
-
 set.seed(5300)
 
 N <- 5000
@@ -101,22 +97,21 @@ N <- 5000
 perm_diff <- numeric(N)
 
 for (i in 1:N) {
-
-  # Shuffle morning and evening labels
+  # Shuffle labels (morning and evening)
   shuffled_group <- sample(
     time_of_day_comparison$morning_evening
   )
-  # Calculate the difference in group means
+  # Calculate the difference in group avg
   perm_diff[i] <- mean(
     time_of_day_comparison$dep_delay[
       shuffled_group == "Evening"
     ]
   ) -
-  mean(
-    time_of_day_comparison$dep_delay[
-      shuffled_group == "Morning"
-    ]
-  )
+    mean(
+      time_of_day_comparison$dep_delay[
+        shuffled_group == "Morning"
+      ]
+    )
 }
 ```
 
@@ -129,14 +124,12 @@ hist(
   xlab = "Difference in Mean Delay (Minutes)",
   col = "lightblue"
 )
-
 ```
 
 Calculate two-sided p-value
 ```{r}
 p_value <- (
-  sum(abs(perm_diff) >= abs(observed_diff)) + 1
-) / (length(perm_diff) + 1)
+  sum(abs(perm_diff) >= abs(observed_diff)) + 1) / (length(perm_diff) + 1)
 
 p_value
 
@@ -146,13 +139,12 @@ sprintf("%.5f", p_value)
 ### Time of day | Findings
 A two-sided permutation test was conducted to investigate whether mean departure delays differed between morning and evening United Airlines flights. The average departure delay was 4.61 minutes for morning flights and 22.77 minutes for evening flights, resulting in an observed difference of approximately 18.16 minutes.
 After 5000 permutations, none of the simulated differences was as extreme as the observed difference.
-
 At the 5% significance level, we reject the null hypothesis. The results provide statistical evidence that mean departure delays differ between morning and evening flights, with evening departures experiencing longer delays on average.
 
 
 ## Departure delay and Wind Speed
 
-
+Check correlation between departure delay and wind speed
 ```{r}
 ua_final %>%
   drop_na(wind_speed) %>%
@@ -179,10 +171,10 @@ Null Hypothesis: The proportion of very late departures is equal between low and
 
 Alternative Hypothesis: The proportion of very later departures differs between low and high wind conditions. 
 
-Create comparison dataset
+Create comparison dataset. Here we will save a dataset for wind comparison and filter out rows with missing wind speed observations. 
 ```{r}
 wind_comparison <- ua_final %>%
-  drop_na(wind_speed) |>
+  drop_na(wind_speed) %>%
   mutate(
     wind_group = if_else(
       wind_speed < 10,
@@ -191,7 +183,7 @@ wind_comparison <- ua_final %>%
     )
   )
 
-wind_comparison |>
+wind_comparison %>%
   count(wind_group)
 ```
 Close to even distribution between high and low wind 
@@ -199,8 +191,8 @@ Close to even distribution between high and low wind
 
 Review summary statistics
 ```{r}
-wind_summary <- wind_comparison |>
-  group_by(wind_group) |>
+wind_summary <- wind_comparison %>%
+  group_by(wind_group) %>%
   summarise(
     total_flights = n(),
     mean_delay = mean(dep_delay),
@@ -218,19 +210,18 @@ The two wind-speed groups contained similar numbers of observations, with 29,080
 Overall, the descriptive results suggest a modest association between wind speed and departure delays. Permutation tests will be used to assess whether the differences in late and very late departure rates are statistically significant.
 
 
-
-
+Capture observed differences
 ```{r}
 observed_late_diff <- mean(
   wind_comparison$late[
     wind_comparison$wind_group == "ModerateHighWind"
   ]
 ) -
-mean(
-  wind_comparison$late[
-    wind_comparison$wind_group == "LowWind"
-  ]
-)
+  mean(
+    wind_comparison$late[
+      wind_comparison$wind_group == "LowWind"
+    ]
+  )
 
 
 observed_very_late_diff <- mean(
@@ -238,16 +229,15 @@ observed_very_late_diff <- mean(
     wind_comparison$wind_group == "ModerateHighWind"
   ]
 ) -
-mean(
-  wind_comparison$very_late[
-    wind_comparison$wind_group == "LowWind"
-  ]
-)
+  mean(
+    wind_comparison$very_late[
+      wind_comparison$wind_group == "LowWind"
+    ]
+  )
 
 
 observed_late_diff
 observed_very_late_diff
-
 ```
 The observed proportion of late departures was 3.89 percentage points higher for flights experiencing wind speeds of 10 mph or greater compared with flights experiencing wind speeds below 10 mph. Similarly, the proportion of very late departures was 1.52 percentage points higher under higher-wind conditions.
 
@@ -263,8 +253,7 @@ perm_late_diff <- numeric(N)
 perm_very_late_diff <- numeric(N)
 
 for (i in 1:N) {
-
-  # Randomly shuffle wind group labels
+  # Randomly shuffle labels (LowWind and ModerateHighWind)
   shuffled_group <- sample(wind_comparison$wind_group)
 
   # Difference in proportion of late departures
@@ -302,18 +291,15 @@ p_very_late <- (sum(abs(perm_very_late_diff) >= abs(observed_very_late_diff)) + 
 
 sprintf("%.5f", p_late)
 sprintf("%.5f", p_very_late)
-
 ```
-
+Check if there were any simulated difference as extreme than the observed diff.
 ```{r}
 sum(abs(perm_late_diff) >= abs(observed_late_diff))
 
 sum(abs(perm_very_late_diff) >= abs(observed_very_late_diff))
 ```
-```{r}
-mean(perm_late_diff)
-mean(perm_very_late_diff)
-```
+None of the simulated differences were as extreme as the observed difference.
+
 ### Wind Speed | Findings
 Two-sided permutation tests were conducted to investigate differences in late and very late departure rates between flights experiencing wind speeds below 10 mph and those experiencing wind speeds of 10 mph or greater. The proportion of late departures was 3.89 percentage points higher under higher-wind conditions, while the proportion of very late departures was 1.52 percentage points higher.
 After 5000 permutations, neither test produced a simulated difference as extreme as its observed difference. The estimated p-value was approximately 0.0002 for both tests.
@@ -335,7 +321,7 @@ There is a weak correlation between precipitation and departure delays.
 
 
 ```{r}
-precip_test <- ua_final%>%
+precip_test <- ua_final %>%
   drop_na(precip) %>%
   mutate(wet_dry = if_else(precip > 0, "Wet", "Dry"))
 
@@ -373,11 +359,11 @@ observed_precip_late_diff <- mean(
     precip_test$wet_dry == "Wet"
   ]
 ) -
-mean(
-  precip_test$late[
-    precip_test$wet_dry == "Dry"
-  ]
-)
+  mean(
+    precip_test$late[
+      precip_test$wet_dry == "Dry"
+    ]
+  )
 
 
 observed_precip_very_late_diff <- mean(
@@ -385,11 +371,11 @@ observed_precip_very_late_diff <- mean(
     precip_test$wet_dry == "Wet"
   ]
 ) -
-mean(
-  precip_test$very_late[
-    precip_test$wet_dry == "Dry"
-  ]
-)
+  mean(
+    precip_test$very_late[
+      precip_test$wet_dry == "Dry"
+    ]
+  )
 
 
 observed_precip_late_diff
@@ -409,7 +395,6 @@ perm_precip_late_diff <- numeric(N)
 perm_precip_very_late_diff <- numeric(N)
 
 for (i in 1:N) {
-
   # Randomly shuffle Wet-Dry labels
   shuffled_group <- sample(precip_test$wet_dry)
 
@@ -449,7 +434,6 @@ p_precip_very_late <- (sum(abs(perm_precip_very_late_diff) >= abs(observed_preci
 
 sprintf("%.5f", p_precip_late)
 sprintf("%.5f", p_precip_very_late)
-
 ```
 ### Precipitation | Findings
 Two-sided permutation tests were conducted using 5000 permutations to investigate whether the proportions of late and very late departures differed between wet and dry conditions. The observed proportion of late departures was 17.70 percentage points higher during wet conditions, while the proportion of very late departures was 12.55 percentage points higher. 
@@ -478,7 +462,6 @@ B <- 5000
 boot_diff <- numeric(B)
 
 for (i in 1:B) {
-
   boot_wet <- sample(wet_late, replace = TRUE)
   boot_dry <- sample(dry_late, replace = TRUE)
 
@@ -545,7 +528,6 @@ Alternative Hypothesis: The proportion of very late departures differs between s
 Create our dataset of analysis
 
 ```{r}
-
 time_of_year_comparison <- ua_final %>%
   mutate(
     summer_winter = case_when(
@@ -565,22 +547,22 @@ observed_season_late_diff <- mean(
     time_of_year_comparison$summer_winter == "Summer"
   ]
 ) -
-mean(
-  time_of_year_comparison$late[
-    time_of_year_comparison$summer_winter == "Winter"
-  ]
-)
+  mean(
+    time_of_year_comparison$late[
+      time_of_year_comparison$summer_winter == "Winter"
+    ]
+  )
 
 observed_season_very_late_diff <- mean(
   time_of_year_comparison$very_late[
     time_of_year_comparison$summer_winter == "Summer"
   ]
 ) -
-mean(
-  time_of_year_comparison$very_late[
-    time_of_year_comparison$summer_winter == "Winter"
-  ]
-)
+  mean(
+    time_of_year_comparison$very_late[
+      time_of_year_comparison$summer_winter == "Winter"
+    ]
+  )
 
 observed_season_late_diff
 observed_season_very_late_diff
@@ -596,35 +578,16 @@ perm_season_late_diff <- numeric(N)
 perm_season_very_late_diff <- numeric(N)
 
 for (i in 1:N) {
-
   # Shuffle summer/winter labels
-  shuffled_group <- sample(
-    time_of_year_comparison$summer_winter
-  )
+  shuffled_group <- sample(time_of_year_comparison$summer_winter)
 
   # Difference in late proportions
-  perm_season_late_diff[i] <- mean(
-    time_of_year_comparison$late[
-      shuffled_group == "Summer"
-    ]
-  ) -
-  mean(
-    time_of_year_comparison$late[
-      shuffled_group == "Winter"
-    ]
-  )
+  perm_season_late_diff[i] <- mean(time_of_year_comparison$late[shuffled_group == "Summer"]) -
+    mean(time_of_year_comparison$late[shuffled_group == "Winter"])
 
   # Difference in very late proportions
-  perm_season_very_late_diff[i] <- mean(
-    time_of_year_comparison$very_late[
-      shuffled_group == "Summer"
-    ]
-  ) -
-  mean(
-    time_of_year_comparison$very_late[
-      shuffled_group == "Winter"
-    ]
-  )
+  perm_season_very_late_diff[i] <- mean(time_of_year_comparison$very_late[shuffled_group == "Summer"]) -
+    mean(time_of_year_comparison$very_late[shuffled_group == "Winter"])
 }
 ```
 
@@ -633,12 +596,12 @@ Calculate p-value
 ```{r}
 p_season_late <- (
   sum(abs(perm_season_late_diff) >=
-      abs(observed_season_late_diff)) + 1
+    abs(observed_season_late_diff)) + 1
 ) / (N + 1)
 
 p_season_very_late <- (
   sum(abs(perm_season_very_late_diff) >=
-      abs(observed_season_very_late_diff)) + 1
+    abs(observed_season_very_late_diff)) + 1
 ) / (N + 1)
 
 sprintf("%.5f", p_season_late)
@@ -685,20 +648,16 @@ Calculate observed differences
 
 ```{r}
 # Difference in late departure proportions
-observed_temp_late_diff <- mean(
-  temp_test$late[temp_test$temp_category == "Hot"]
-) -
-mean(
-  temp_test$late[temp_test$temp_category == "Moderate"]
-)
+observed_temp_late_diff <- mean(temp_test$late[temp_test$temp_category == "Hot"]) -
+  mean(
+    temp_test$late[temp_test$temp_category == "Moderate"]
+  )
 
 # Difference in very late departure proportions
 observed_temp_very_late_diff <- mean(
   temp_test$very_late[temp_test$temp_category == "Hot"]
 ) -
-mean(
-  temp_test$very_late[temp_test$temp_category == "Moderate"]
-)
+  mean(temp_test$very_late[temp_test$temp_category == "Moderate"])
 
 observed_temp_late_diff
 observed_temp_very_late_diff
@@ -717,7 +676,6 @@ perm_temp_late_diff <- numeric(N)
 perm_temp_very_late_diff <- numeric(N)
 
 for (i in 1:N) {
-
   # Shuffle temperature labels
   shuffled_group <- sample(temp_test$temp_category)
 
@@ -725,17 +683,17 @@ for (i in 1:N) {
   perm_temp_late_diff[i] <- mean(
     temp_test$late[shuffled_group == "Hot"]
   ) -
-  mean(
-    temp_test$late[shuffled_group == "Moderate"]
-  )
+    mean(
+      temp_test$late[shuffled_group == "Moderate"]
+    )
 
   # Very late departure difference
   perm_temp_very_late_diff[i] <- mean(
     temp_test$very_late[shuffled_group == "Hot"]
   ) -
-  mean(
-    temp_test$very_late[shuffled_group == "Moderate"]
-  )
+    mean(
+      temp_test$very_late[shuffled_group == "Moderate"]
+    )
 }
 ```
 
@@ -744,12 +702,12 @@ for (i in 1:N) {
 ```{r}
 p_temp_late <- (
   sum(abs(perm_temp_late_diff) >=
-      abs(observed_temp_late_diff)) + 1
+    abs(observed_temp_late_diff)) + 1
 ) / (N + 1)
 
 p_temp_very_late <- (
   sum(abs(perm_temp_very_late_diff) >=
-      abs(observed_temp_very_late_diff)) + 1
+    abs(observed_temp_very_late_diff)) + 1
 ) / (N + 1)
 
 sprintf("%.5f", p_temp_late)
@@ -782,7 +740,6 @@ Alternative Hypothesis: The proportion of very late departures differs between r
 
 Create dataset for analysis
 ```{r}
-
 visibility_test <- ua_final %>%
   drop_na(visib) %>%
   mutate(
@@ -791,7 +748,6 @@ visibility_test <- ua_final %>%
       TRUE ~ "Normal"
     )
   )
-
 ```
 
 Calculate observed differences
@@ -803,11 +759,11 @@ observed_visib_late_diff <- mean(
     visibility_test$visibility_category == "Reduced"
   ]
 ) -
-mean(
-  visibility_test$late[
-    visibility_test$visibility_category == "Normal"
-  ]
-)
+  mean(
+    visibility_test$late[
+      visibility_test$visibility_category == "Normal"
+    ]
+  )
 
 # Difference in very late departure proportions
 observed_visib_very_late_diff <- mean(
@@ -815,11 +771,11 @@ observed_visib_very_late_diff <- mean(
     visibility_test$visibility_category == "Reduced"
   ]
 ) -
-mean(
-  visibility_test$very_late[
-    visibility_test$visibility_category == "Normal"
-  ]
-)
+  mean(
+    visibility_test$very_late[
+      visibility_test$visibility_category == "Normal"
+    ]
+  )
 
 observed_visib_late_diff
 observed_visib_very_late_diff
@@ -833,7 +789,6 @@ perm_visib_late_diff <- numeric(N)
 perm_visib_very_late_diff <- numeric(N)
 
 for (i in 1:N) {
-
   # Shuffle visibility group labels
   shuffled_group <- sample(
     visibility_test$visibility_category
@@ -845,11 +800,11 @@ for (i in 1:N) {
       shuffled_group == "Reduced"
     ]
   ) -
-  mean(
-    visibility_test$late[
-      shuffled_group == "Normal"
-    ]
-  )
+    mean(
+      visibility_test$late[
+        shuffled_group == "Normal"
+      ]
+    )
 
   # Difference in very late departure proportions
   perm_visib_very_late_diff[i] <- mean(
@@ -857,11 +812,11 @@ for (i in 1:N) {
       shuffled_group == "Reduced"
     ]
   ) -
-  mean(
-    visibility_test$very_late[
-      shuffled_group == "Normal"
-    ]
-  )
+    mean(
+      visibility_test$very_late[
+        shuffled_group == "Normal"
+      ]
+    )
 }
 ```
 
@@ -869,12 +824,12 @@ for (i in 1:N) {
 ```{r}
 p_visib_late <- (
   sum(abs(perm_visib_late_diff) >=
-      abs(observed_visib_late_diff)) + 1
+    abs(observed_visib_late_diff)) + 1
 ) / (N + 1)
 
 p_visib_very_late <- (
   sum(abs(perm_visib_very_late_diff) >=
-      abs(observed_visib_very_late_diff)) + 1
+    abs(observed_visib_very_late_diff)) + 1
 ) / (N + 1)
 
 sprintf("%.5f", p_visib_late)
@@ -883,9 +838,3 @@ sprintf("%.5f", p_visib_very_late)
 ### Visibility | Findings
 Two-sided permutation tests using 5000 permutations were conducted to examine whether late and very late departure rates differed between flights experiencing reduced visibility (below 10 miles) and normal recorded visibility (10 miles). Flights experiencing reduced visibility had a late-departure rate 5.23 percentage points higher than flights under normal visibility conditions. Similarly, very late departures were 5.24 percentage points more frequent under reduced visibility.
 Both permutation tests produced estimated p-values of approximately 0.0002. At the 5% significance level, we reject both null hypotheses. The results indicate statistically significant differences in late and very late departure rates between the two visibility groups under the permutation-test assumptions.
-
-
-
-
-
-

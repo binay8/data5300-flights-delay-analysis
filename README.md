@@ -1,7 +1,7 @@
 # United Airlines Departure Delays
 
 ## Project Overview
-This report investigates departure delays for United Airlines flights departing from 3 New York airports: John F. Kennedy (JFK), LaGuardia Airport (LGA), and Newark Liberty (EWR). departure delays by examining how weather and time of day/year may impact departure delays.  
+This report investigates departure delays for United Airlines flights departing from 3 New York airports: John F. Kennedy (JFK), LaGuardia Airport (LGA), and Newark Liberty (EWR) by examining how weather and time of day/year may impact departure delays.  
 
 - **Domain:** Travel, Airlines
 - **Key Techniques:** Exploratory Data Analysis, Permutation Testing

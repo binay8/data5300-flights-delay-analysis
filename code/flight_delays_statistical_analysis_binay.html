@@ -11,7 +11,7 @@
 
 <meta name="author" content="Binay Raut" />
 
-<meta name="date" content="2026-11-04" />
+<meta name="date" content="2026-11-06" />
 
 <title>flight_delays_statistical_analysis_binay</title>
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">flight_delays_statistical_analysis_binay</h1>
 <h4 class="author">Binay Raut</h4>
-<h4 class="date">2026-11-04</h4>
+<h4 class="date">2026-11-06</h4>
 
 </div>
 
@@ -375,7 +375,7 @@ display: none;
 <h2>Departure delay and Time of Day</h2>
 <p>Is there a simple correlation between departure delays and time of
 day?</p>
-<pre class="r"><code>ua_final |&gt;
+<pre class="r"><code>ua_final %&gt;%
   summarise(
     correlation = cor(hour, dep_delay)
   )</code></pre>
@@ -403,15 +403,15 @@ and evening flights.</p>
 <pre class="r"><code>time_of_day_comparison &lt;- ua_final %&gt;%
   mutate(
     morning_evening = case_when(
-      hour &gt;= 0 &amp; hour &lt; 12 ~ &quot;Morning&quot;, # flights between midnight and 12  
+      hour &gt;= 0 &amp; hour &lt; 12 ~ &quot;Morning&quot;, # flights between midnight and 12
       hour &gt;= 18 &amp; hour &lt;= 23 ~ &quot;Evening&quot;,
       TRUE ~ NA_character_
     )
   ) %&gt;%
   drop_na(morning_evening)</code></pre>
 <p>Review summary statistics</p>
-<pre class="r"><code>time_summary &lt;- time_of_day_comparison |&gt;
-  group_by(morning_evening) |&gt;
+<pre class="r"><code>time_summary &lt;- time_of_day_comparison %&gt;%
+  group_by(morning_evening) %&gt;%
   summarise(
     total_flights = n(),
     mean_delay = mean(dep_delay),
@@ -438,11 +438,11 @@ minutes.</p>
     time_of_day_comparison$morning_evening == &quot;Evening&quot;
   ]
 ) -
-mean(
-  time_of_day_comparison$dep_delay[
-    time_of_day_comparison$morning_evening == &quot;Morning&quot;
-  ]
-)
+  mean(
+    time_of_day_comparison$dep_delay[
+      time_of_day_comparison$morning_evening == &quot;Morning&quot;
+    ]
+  )
 
 observed_diff</code></pre>
 <pre><code>## [1] 18.15549</code></pre>
@@ -454,22 +454,21 @@ N &lt;- 5000
 perm_diff &lt;- numeric(N)
 
 for (i in 1:N) {
-
-  # Shuffle morning and evening labels
+  # Shuffle labels (morning and evening)
   shuffled_group &lt;- sample(
     time_of_day_comparison$morning_evening
   )
-  # Calculate the difference in group means
+  # Calculate the difference in group avg
   perm_diff[i] &lt;- mean(
     time_of_day_comparison$dep_delay[
       shuffled_group == &quot;Evening&quot;
     ]
   ) -
-  mean(
-    time_of_day_comparison$dep_delay[
-      shuffled_group == &quot;Morning&quot;
-    ]
-  )
+    mean(
+      time_of_day_comparison$dep_delay[
+        shuffled_group == &quot;Morning&quot;
+      ]
+    )
 }</code></pre>
 <p>Visualize permutation distribution. Expect to see a normal
 distribution centered around 0.</p>
@@ -483,8 +482,7 @@ distribution centered around 0.</p>
 <p><img role="img" aria-label src="data:image/png;base64,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" alt width="672" /></p>
 <p>Calculate two-sided p-value</p>
 <pre class="r"><code>p_value &lt;- (
-  sum(abs(perm_diff) &gt;= abs(observed_diff)) + 1
-) / (length(perm_diff) + 1)
+  sum(abs(perm_diff) &gt;= abs(observed_diff)) + 1) / (length(perm_diff) + 1)
 
 p_value</code></pre>
 <pre><code>## [1] 0.00019996</code></pre>
@@ -499,15 +497,15 @@ Airlines flights. The average departure delay was 4.61 minutes for
 morning flights and 22.77 minutes for evening flights, resulting in an
 observed difference of approximately 18.16 minutes. After 5000
 permutations, none of the simulated differences was as extreme as the
-observed difference.</p>
-<p>At the 5% significance level, we reject the null hypothesis. The
-results provide statistical evidence that mean departure delays differ
-between morning and evening flights, with evening departures
-experiencing longer delays on average.</p>
+observed difference. At the 5% significance level, we reject the null
+hypothesis. The results provide statistical evidence that mean departure
+delays differ between morning and evening flights, with evening
+departures experiencing longer delays on average.</p>
 </div>
 </div>
 <div id="departure-delay-and-wind-speed" class="section level2">
 <h2>Departure delay and Wind Speed</h2>
+<p>Check correlation between departure delay and wind speed</p>
 <pre class="r"><code>ua_final %&gt;%
   drop_na(wind_speed) %&gt;%
   summarise(
@@ -544,9 +542,10 @@ wind-speed groups?</p>
 between low and high wind conditions.</p>
 <p>Alternative Hypothesis: The proportion of very later departures
 differs between low and high wind conditions.</p>
-<p>Create comparison dataset</p>
+<p>Create comparison dataset. Here we will save a dataset for wind
+comparison and filter out rows with missing wind speed observations.</p>
 <pre class="r"><code>wind_comparison &lt;- ua_final %&gt;%
-  drop_na(wind_speed) |&gt;
+  drop_na(wind_speed) %&gt;%
   mutate(
     wind_group = if_else(
       wind_speed &lt; 10,
@@ -555,7 +554,7 @@ differs between low and high wind conditions.</p>
     )
   )
 
-wind_comparison |&gt;
+wind_comparison %&gt;%
   count(wind_group)</code></pre>
 <pre><code>## # A tibble: 2 × 2
 ##   wind_group           n
@@ -564,8 +563,8 @@ wind_comparison |&gt;
 ## 2 ModerateHighWind 28589</code></pre>
 <p>Close to even distribution between high and low wind</p>
 <p>Review summary statistics</p>
-<pre class="r"><code>wind_summary &lt;- wind_comparison |&gt;
-  group_by(wind_group) |&gt;
+<pre class="r"><code>wind_summary &lt;- wind_comparison %&gt;%
+  group_by(wind_group) %&gt;%
   summarise(
     total_flights = n(),
     mean_delay = mean(dep_delay),
@@ -596,16 +595,17 @@ from 12.37% to 13.89%.</p>
 wind speed and departure delays. Permutation tests will be used to
 assess whether the differences in late and very late departure rates are
 statistically significant.</p>
+<p>Capture observed differences</p>
 <pre class="r"><code>observed_late_diff &lt;- mean(
   wind_comparison$late[
     wind_comparison$wind_group == &quot;ModerateHighWind&quot;
   ]
 ) -
-mean(
-  wind_comparison$late[
-    wind_comparison$wind_group == &quot;LowWind&quot;
-  ]
-)
+  mean(
+    wind_comparison$late[
+      wind_comparison$wind_group == &quot;LowWind&quot;
+    ]
+  )
 
 
 observed_very_late_diff &lt;- mean(
@@ -613,11 +613,11 @@ observed_very_late_diff &lt;- mean(
     wind_comparison$wind_group == &quot;ModerateHighWind&quot;
   ]
 ) -
-mean(
-  wind_comparison$very_late[
-    wind_comparison$wind_group == &quot;LowWind&quot;
-  ]
-)
+  mean(
+    wind_comparison$very_late[
+      wind_comparison$wind_group == &quot;LowWind&quot;
+    ]
+  )
 
 
 observed_late_diff</code></pre>
@@ -640,8 +640,7 @@ perm_late_diff &lt;- numeric(N)
 perm_very_late_diff &lt;- numeric(N)
 
 for (i in 1:N) {
-
-  # Randomly shuffle wind group labels
+  # Randomly shuffle labels (LowWind and ModerateHighWind)
   shuffled_group &lt;- sample(wind_comparison$wind_group)
 
   # Difference in proportion of late departures
@@ -677,14 +676,14 @@ sprintf(&quot;%.5f&quot;, p_late)</code></pre>
 <pre><code>## [1] &quot;0.00020&quot;</code></pre>
 <pre class="r"><code>sprintf(&quot;%.5f&quot;, p_very_late)</code></pre>
 <pre><code>## [1] &quot;0.00020&quot;</code></pre>
+<p>Check if there were any simulated difference as extreme than the
+observed diff.</p>
 <pre class="r"><code>sum(abs(perm_late_diff) &gt;= abs(observed_late_diff))</code></pre>
 <pre><code>## [1] 0</code></pre>
 <pre class="r"><code>sum(abs(perm_very_late_diff) &gt;= abs(observed_very_late_diff))</code></pre>
 <pre><code>## [1] 0</code></pre>
-<pre class="r"><code>mean(perm_late_diff)</code></pre>
-<pre><code>## [1] 3.240399e-05</code></pre>
-<pre class="r"><code>mean(perm_very_late_diff)</code></pre>
-<pre><code>## [1] 2.856358e-05</code></pre>
+<p>None of the simulated differences were as extreme as the observed
+difference.</p>
 </div>
 <div id="wind-speed-findings" class="section level3">
 <h3>Wind Speed | Findings</h3>
@@ -714,7 +713,7 @@ late departure proportions between the two wind-speed groups.</p>
 ## 1      0.0821</code></pre>
 <p>There is a weak correlation between precipitation and departure
 delays.</p>
-<pre class="r"><code>precip_test &lt;- ua_final%&gt;%
+<pre class="r"><code>precip_test &lt;- ua_final %&gt;%
   drop_na(precip) %&gt;%
   mutate(wet_dry = if_else(precip &gt; 0, &quot;Wet&quot;, &quot;Dry&quot;))
 
@@ -761,11 +760,11 @@ differs between dry and wet conditions.</p>
     precip_test$wet_dry == &quot;Wet&quot;
   ]
 ) -
-mean(
-  precip_test$late[
-    precip_test$wet_dry == &quot;Dry&quot;
-  ]
-)
+  mean(
+    precip_test$late[
+      precip_test$wet_dry == &quot;Dry&quot;
+    ]
+  )
 
 
 observed_precip_very_late_diff &lt;- mean(
@@ -773,11 +772,11 @@ observed_precip_very_late_diff &lt;- mean(
     precip_test$wet_dry == &quot;Wet&quot;
   ]
 ) -
-mean(
-  precip_test$very_late[
-    precip_test$wet_dry == &quot;Dry&quot;
-  ]
-)
+  mean(
+    precip_test$very_late[
+      precip_test$wet_dry == &quot;Dry&quot;
+    ]
+  )
 
 
 observed_precip_late_diff</code></pre>
@@ -799,7 +798,6 @@ perm_precip_late_diff &lt;- numeric(N)
 perm_precip_very_late_diff &lt;- numeric(N)
 
 for (i in 1:N) {
-
   # Randomly shuffle Wet-Dry labels
   shuffled_group &lt;- sample(precip_test$wet_dry)
 
@@ -849,7 +847,7 @@ At the 5% significance level, we reject both null hypotheses. The
 results provide strong statistical evidence that late and very late
 departure rates differ between wet and dry conditions, with higher
 observed rates during wet conditions.</p>
-<p>Bootstrap the difference in late proportions</p>
+<p>Bootstrap simulation of the difference in late proportions</p>
 <pre class="r"><code># Separate late-departure outcomes by precipitation group
 wet_late &lt;- precip_test$late[
   precip_test$wet_dry == &quot;Wet&quot;
@@ -869,7 +867,6 @@ B &lt;- 5000
 boot_diff &lt;- numeric(B)
 
 for (i in 1:B) {
-
   boot_wet &lt;- sample(wet_late, replace = TRUE)
   boot_dry &lt;- sample(dry_late, replace = TRUE)
 
@@ -906,9 +903,7 @@ abline(
 United Airlines flights departing during wet conditions were 17.70
 percentage points more likely to depart late than flights departing
 during dry conditions. A 95% bootstrap confidence interval estimated the
-difference to be between 16.16 and 19.23 percentage points. This
-provides additional evidence that the observed difference is substantial
-rather than simply statistically significant.</p>
+difference to be between 16.16 and 19.23 percentage points.</p>
 </div>
 </div>
 <div id="departure-delay-and-time-of-year" class="section level2">
@@ -934,8 +929,8 @@ very late departures (more than 30 minutes late) between flights in
 summer months (June-August) and winter months (December-February?</p>
 <p>Null Hypothesis:The proportion of very late departures is equal
 between summer and winter.</p>
-<p>Alternate Hypothesis: The proportion of very late departures differs
-between summer and winter.</p>
+<p>Alternative Hypothesis: The proportion of very late departures
+differs between summer and winter.</p>
 <p>Create our dataset of analysis</p>
 <pre class="r"><code>time_of_year_comparison &lt;- ua_final %&gt;%
   mutate(
@@ -952,22 +947,22 @@ between summer and winter.</p>
     time_of_year_comparison$summer_winter == &quot;Summer&quot;
   ]
 ) -
-mean(
-  time_of_year_comparison$late[
-    time_of_year_comparison$summer_winter == &quot;Winter&quot;
-  ]
-)
+  mean(
+    time_of_year_comparison$late[
+      time_of_year_comparison$summer_winter == &quot;Winter&quot;
+    ]
+  )
 
 observed_season_very_late_diff &lt;- mean(
   time_of_year_comparison$very_late[
     time_of_year_comparison$summer_winter == &quot;Summer&quot;
   ]
 ) -
-mean(
-  time_of_year_comparison$very_late[
-    time_of_year_comparison$summer_winter == &quot;Winter&quot;
-  ]
-)
+  mean(
+    time_of_year_comparison$very_late[
+      time_of_year_comparison$summer_winter == &quot;Winter&quot;
+    ]
+  )
 
 observed_season_late_diff</code></pre>
 <pre><code>## [1] 0.02476267</code></pre>
@@ -982,45 +977,26 @@ perm_season_late_diff &lt;- numeric(N)
 perm_season_very_late_diff &lt;- numeric(N)
 
 for (i in 1:N) {
-
   # Shuffle summer/winter labels
-  shuffled_group &lt;- sample(
-    time_of_year_comparison$summer_winter
-  )
+  shuffled_group &lt;- sample(time_of_year_comparison$summer_winter)
 
   # Difference in late proportions
-  perm_season_late_diff[i] &lt;- mean(
-    time_of_year_comparison$late[
-      shuffled_group == &quot;Summer&quot;
-    ]
-  ) -
-  mean(
-    time_of_year_comparison$late[
-      shuffled_group == &quot;Winter&quot;
-    ]
-  )
+  perm_season_late_diff[i] &lt;- mean(time_of_year_comparison$late[shuffled_group == &quot;Summer&quot;]) -
+    mean(time_of_year_comparison$late[shuffled_group == &quot;Winter&quot;])
 
   # Difference in very late proportions
-  perm_season_very_late_diff[i] &lt;- mean(
-    time_of_year_comparison$very_late[
-      shuffled_group == &quot;Summer&quot;
-    ]
-  ) -
-  mean(
-    time_of_year_comparison$very_late[
-      shuffled_group == &quot;Winter&quot;
-    ]
-  )
+  perm_season_very_late_diff[i] &lt;- mean(time_of_year_comparison$very_late[shuffled_group == &quot;Summer&quot;]) -
+    mean(time_of_year_comparison$very_late[shuffled_group == &quot;Winter&quot;])
 }</code></pre>
 <p>Calculate p-value</p>
 <pre class="r"><code>p_season_late &lt;- (
   sum(abs(perm_season_late_diff) &gt;=
-      abs(observed_season_late_diff)) + 1
+    abs(observed_season_late_diff)) + 1
 ) / (N + 1)
 
 p_season_very_late &lt;- (
   sum(abs(perm_season_very_late_diff) &gt;=
-      abs(observed_season_very_late_diff)) + 1
+    abs(observed_season_very_late_diff)) + 1
 ) / (N + 1)
 
 sprintf(&quot;%.5f&quot;, p_season_late)</code></pre>
@@ -1049,10 +1025,11 @@ temperatures and increased departure delays.</p>
 <div id="research-question-1-3" class="section level3">
 <h3>Research Question 1</h3>
 <p>Is there a statistically significant difference in the proportion of
-late departures between hot and moderate temperature conditions? Null
-Hypothesis: The proportion of late departures is equal between hot and
-moderate conditions. Alternate Hypothesis: The proportions differ
-between the two conditions.</p>
+late departures between hot and moderate temperature conditions?</p>
+<p>Null Hypothesis: The proportion of late departures is equal between
+hot and moderate conditions.</p>
+<p>Alternative Hypothesis: The proportions differ between the two
+conditions.</p>
 </div>
 <div id="research-question-2-3" class="section level3">
 <h3>Research Question 2</h3>
@@ -1075,20 +1052,16 @@ conditions.</p>
   filter(temp_category %in% c(&quot;Moderate&quot;, &quot;Hot&quot;))</code></pre>
 <p>Calculate observed differences</p>
 <pre class="r"><code># Difference in late departure proportions
-observed_temp_late_diff &lt;- mean(
-  temp_test$late[temp_test$temp_category == &quot;Hot&quot;]
-) -
-mean(
-  temp_test$late[temp_test$temp_category == &quot;Moderate&quot;]
-)
+observed_temp_late_diff &lt;- mean(temp_test$late[temp_test$temp_category == &quot;Hot&quot;]) -
+  mean(
+    temp_test$late[temp_test$temp_category == &quot;Moderate&quot;]
+  )
 
 # Difference in very late departure proportions
 observed_temp_very_late_diff &lt;- mean(
   temp_test$very_late[temp_test$temp_category == &quot;Hot&quot;]
 ) -
-mean(
-  temp_test$very_late[temp_test$temp_category == &quot;Moderate&quot;]
-)
+  mean(temp_test$very_late[temp_test$temp_category == &quot;Moderate&quot;])
 
 observed_temp_late_diff</code></pre>
 <pre><code>## [1] 0.129309</code></pre>
@@ -1107,7 +1080,6 @@ perm_temp_late_diff &lt;- numeric(N)
 perm_temp_very_late_diff &lt;- numeric(N)
 
 for (i in 1:N) {
-
   # Shuffle temperature labels
   shuffled_group &lt;- sample(temp_test$temp_category)
 
@@ -1115,26 +1087,26 @@ for (i in 1:N) {
   perm_temp_late_diff[i] &lt;- mean(
     temp_test$late[shuffled_group == &quot;Hot&quot;]
   ) -
-  mean(
-    temp_test$late[shuffled_group == &quot;Moderate&quot;]
-  )
+    mean(
+      temp_test$late[shuffled_group == &quot;Moderate&quot;]
+    )
 
   # Very late departure difference
   perm_temp_very_late_diff[i] &lt;- mean(
     temp_test$very_late[shuffled_group == &quot;Hot&quot;]
   ) -
-  mean(
-    temp_test$very_late[shuffled_group == &quot;Moderate&quot;]
-  )
+    mean(
+      temp_test$very_late[shuffled_group == &quot;Moderate&quot;]
+    )
 }</code></pre>
 <pre class="r"><code>p_temp_late &lt;- (
   sum(abs(perm_temp_late_diff) &gt;=
-      abs(observed_temp_late_diff)) + 1
+    abs(observed_temp_late_diff)) + 1
 ) / (N + 1)
 
 p_temp_very_late &lt;- (
   sum(abs(perm_temp_very_late_diff) &gt;=
-      abs(observed_temp_very_late_diff)) + 1
+    abs(observed_temp_very_late_diff)) + 1
 ) / (N + 1)
 
 sprintf(&quot;%.5f&quot;, p_temp_late)</code></pre>
@@ -1169,7 +1141,7 @@ late departures between flights experiencing reduced visibility and
 those experiencing normal visibility?</p>
 <p>Null Hypothesis: The proportion of late departures is equal between
 reduced and normal visibility conditions.</p>
-<p>Alternate Hypothesis: The proportion of late departures differs
+<p>Alternative Hypothesis: The proportion of late departures differs
 between reduced and normal visibility conditions.</p>
 </div>
 <div id="research-question-2-4" class="section level3">
@@ -1197,11 +1169,11 @@ observed_visib_late_diff &lt;- mean(
     visibility_test$visibility_category == &quot;Reduced&quot;
   ]
 ) -
-mean(
-  visibility_test$late[
-    visibility_test$visibility_category == &quot;Normal&quot;
-  ]
-)
+  mean(
+    visibility_test$late[
+      visibility_test$visibility_category == &quot;Normal&quot;
+    ]
+  )
 
 # Difference in very late departure proportions
 observed_visib_very_late_diff &lt;- mean(
@@ -1209,11 +1181,11 @@ observed_visib_very_late_diff &lt;- mean(
     visibility_test$visibility_category == &quot;Reduced&quot;
   ]
 ) -
-mean(
-  visibility_test$very_late[
-    visibility_test$visibility_category == &quot;Normal&quot;
-  ]
-)
+  mean(
+    visibility_test$very_late[
+      visibility_test$visibility_category == &quot;Normal&quot;
+    ]
+  )
 
 observed_visib_late_diff</code></pre>
 <pre><code>## [1] 0.05230128</code></pre>
@@ -1227,7 +1199,6 @@ perm_visib_late_diff &lt;- numeric(N)
 perm_visib_very_late_diff &lt;- numeric(N)
 
 for (i in 1:N) {
-
   # Shuffle visibility group labels
   shuffled_group &lt;- sample(
     visibility_test$visibility_category
@@ -1239,11 +1210,11 @@ for (i in 1:N) {
       shuffled_group == &quot;Reduced&quot;
     ]
   ) -
-  mean(
-    visibility_test$late[
-      shuffled_group == &quot;Normal&quot;
-    ]
-  )
+    mean(
+      visibility_test$late[
+        shuffled_group == &quot;Normal&quot;
+      ]
+    )
 
   # Difference in very late departure proportions
   perm_visib_very_late_diff[i] &lt;- mean(
@@ -1251,20 +1222,20 @@ for (i in 1:N) {
       shuffled_group == &quot;Reduced&quot;
     ]
   ) -
-  mean(
-    visibility_test$very_late[
-      shuffled_group == &quot;Normal&quot;
-    ]
-  )
+    mean(
+      visibility_test$very_late[
+        shuffled_group == &quot;Normal&quot;
+      ]
+    )
 }</code></pre>
 <pre class="r"><code>p_visib_late &lt;- (
   sum(abs(perm_visib_late_diff) &gt;=
-      abs(observed_visib_late_diff)) + 1
+    abs(observed_visib_late_diff)) + 1
 ) / (N + 1)
 
 p_visib_very_late &lt;- (
   sum(abs(perm_visib_very_late_diff) &gt;=
-      abs(observed_visib_very_late_diff)) + 1
+    abs(observed_visib_very_late_diff)) + 1
 ) / (N + 1)
 
 sprintf(&quot;%.5f&quot;, p_visib_late)</code></pre>

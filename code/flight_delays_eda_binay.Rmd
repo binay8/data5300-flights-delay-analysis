@@ -9,7 +9,6 @@ output: html_document
 
 ```{r}
 library(tidyverse)
-
 ```
 
 
@@ -39,14 +38,14 @@ hourly_summary
 
 
 ```{r}
-hourly_summary |>
+hourly_summary %>%
   ggplot(aes(x = hour, y = mean_delay)) +
   geom_line(color = "blue", linewidth = 1) +
   geom_point(color = "red", size = 2) +
   scale_x_continuous(breaks = 0:23) +
   labs(
     title = "Average Departure Delay by Departure Hour",
-    #subtitle = "United Airlines flights departing from NYC-area airports, 2013",
+    # subtitle = "United Airlines flights departing from NYC-area airports, 2013",
     x = "Scheduled Departure Hour (24-hour clock)",
     y = "Average Departure Delay (Minutes)"
   ) +
@@ -61,17 +60,13 @@ Take a look at number of flights per hours
 
 ```{r}
 hourly_summary %>%
-  ggplot(aes(x=hour, y = total_flights))+
+  ggplot(aes(x = hour, y = total_flights)) +
   geom_col(fill = "blue") +
   labs(
     title = "Number of United Airlines Flights by Scheduled Hour",
     x = "Scheduled Departure Hour (24-hour clock)",
     y = "Number of Flights"
-  ) 
-
-
-
-
+  )
 ```
 
 * Although flights scheduled at 10 PM have the highest average departure delay, the number of flights scheduled during this hour is relatively small. 
@@ -86,7 +81,7 @@ hourly_summary %>%
     mean_delay,
     median_delay,
     sd_delay
-  ) |>
+  ) %>%
   knitr::kable(digits = 2)
 ```
 * Average departure delay increases thorough the day. Average delay progressively increases starting with average delay 2.16 minutes for 5 PM to 23.09 minutes for flights departing at 8 PM. 
@@ -121,9 +116,10 @@ hourly_summary %>%
     x = "Scheduled Departure Hour",
     y = "Percentage of Flights (%)",
     color = "Delay Category"
-  ) 
+  )
 ```
-### Time of Day | Findings
+
+### Time of Day | Exploratory Findings
 
 Departure delays show a noticeable relationship with scheduled departure time. Flights scheduled during the early morning generally experience shorter average delays, while flights scheduled later in the day tend to experience longer delays.
 For example, flights scheduled at 6 AM had an average departure delay of 2.72 minutes, compared with 22.60 minutes for flights scheduled at 6 PM. The median departure delays were considerably lower than the corresponding averages, suggesting that unusually long delays influence the mean.
@@ -139,9 +135,6 @@ Since we know there are observations for wind speed missing in our dataset, we f
 ```{r}
 wind_speed_df <- df %>%
   drop_na(wind_speed)
-
-
-
 ```
 
 
@@ -175,7 +168,7 @@ wind_speed_df %>%
     title = "Distribution of Wind Speed",
     x = "Wind Speed (mph)",
     y = "Number of Flights"
-  ) 
+  )
 ```
 * Most flights are between 5 to 15 miles per hour. 
 * As wind speed approaches 20mph and more, fewer flights are happening. 
@@ -192,7 +185,7 @@ wind_speed_df %>%
     title = "Wind Speed vs. Departure Delay",
     x = "Wind Speed (mph)",
     y = "Departure Delay (Minutes)"
-  ) 
+  )
 ```
 
 * Fairly consistent distribution of delays across different wind speed data.
@@ -201,7 +194,7 @@ wind_speed_df %>%
 Group wind speed by severity: low (less than 10 mph), moderate (less than 20) and rest (higher than 20) as high
 
 ```{r}
-wind_speed_df <- wind_speed_df |>
+wind_speed_df <- wind_speed_df %>%
   mutate(
     wind_severity = case_when(
       wind_speed < 10 ~ "low",
@@ -219,8 +212,8 @@ wind_speed_df <- wind_speed_df |>
 Summarize the data so we can see proportions of flights that are late and very late by wind speed category.
 
 ```{r}
-wind_summary <- wind_speed_df |>
-  group_by(wind_severity) |>
+wind_summary <- wind_speed_df %>%
+  group_by(wind_severity) %>%
   summarise(
     total_flights = n(),
     mean_delay = mean(dep_delay),
@@ -278,7 +271,7 @@ precipitation_data <- df %>%
 
 Summary statistics
 ```{r}
-precipitation_data |>
+precipitation_data %>%
   summarise(
     total_flights = n(),
     min_precip = min(precip),
@@ -292,7 +285,7 @@ precipitation_data |>
 ```
 
 ```{r}
-precipitation_data |>
+precipitation_data %>%
   ggplot(aes(x = precip)) +
   geom_histogram(
     binwidth = 0.05,
@@ -303,8 +296,7 @@ precipitation_data |>
     title = "Distribution of Precipitation",
     x = "Hourly Precipitation (Inches)",
     y = "Number of Flights"
-  ) 
-
+  )
 ```
 
 * Most flights occurring when there was none to minimal precipitation.
@@ -314,7 +306,6 @@ Distribution of flights by precipitation
 precipitation_data %>%
   summarise(
     total_flights = n(),
-
     dry_pct = mean(precip == 0) * 100,
     wet_pct = mean(precip > 0) * 100
   )
@@ -329,7 +320,7 @@ See departure delay during wet or dry conditions.
 
 ```{r}
 precipitation_data <- precipitation_data %>%
-  mutate( wet_dry = if_else( precip == 0, "Dry", "Wet"))
+  mutate(wet_dry = if_else(precip == 0, "Dry", "Wet"))
 ```
 
 
@@ -344,7 +335,6 @@ precip_summary <- precipitation_data %>%
     median_delay = median(dep_delay),
     late_pct = mean(late) * 100,
     very_late_pct = mean(very_late) * 100
-
   )
 
 precip_summary
@@ -352,7 +342,7 @@ precip_summary
 
 ```{r}
 precip_summary %>%
-  select(wet_dry, late_pct, very_late_pct) |>
+  select(wet_dry, late_pct, very_late_pct) %>%
   pivot_longer(
     cols = c(late_pct, very_late_pct),
     names_to = "delay_type",
@@ -364,19 +354,19 @@ precip_summary %>%
       late_pct = "Late",
       very_late_pct = "Very Late"
     )
-  ) %>% 
+  ) %>%
   ggplot(aes(
     x = wet_dry,
     y = percentage,
     fill = delay_type
   )) +
- geom_col(position = "dodge") +
+  geom_col(position = "dodge") +
   labs(
     title = "Late Departures During Dry and Wet Conditions",
     x = "Precipitation Condition",
     y = "Percentage of Flights (%)",
     fill = "Departure Category"
-  ) 
+  )
 ```
 
 The chart shows that United Airlines flights scheduled during wet conditions experienced higher rates of both late and very late departures compared with flights scheduled during dry conditions.  
@@ -397,7 +387,6 @@ glimpse(df)
 
 
 ```{r}
-
 monthly_summary <- df %>%
   group_by(month) %>%
   summarise(
@@ -412,7 +401,7 @@ monthly_summary <- df %>%
 
 
 monthly_summary %>%
-  mutate(month= month.name[month]) %>%
+  mutate(month = month.name[month]) %>%
   knitr::kable(
     digits = 2,
     col.names = c(
@@ -426,7 +415,6 @@ monthly_summary %>%
     ),
     caption = "Departure Delays by Month"
   )
-
 ```
 
 ```{r}
@@ -468,8 +456,9 @@ monthly_summary %>%
     x = "Month",
     y = "Percentage of Flights",
     color = "Late vs Very Late"
-  ) 
+  )
 ```
+
 ### Time of Year | Exploratory Findings
 
 Number of flights are approximately evenly distributed between all 12 months. Departure delays varied throughout the year. June and July experienced the longest average departure delays, at approximately 20 minutes. Additionally, June and July also had the one of the highest percentages of late and very late departures, with over 56% of flights departing late and approximately 20% of flights departing more than 30 minutes late. The month of December also had a high percentage of delays with an average delay of 17.72 minutes. December had the highest percentage of flights late with 64.68% of flights late.   
@@ -510,7 +499,7 @@ temperature_data %>%
     title = "Distribution of Temperatures",
     x = "Temperature (F)",
     y = "Number of Flights"
-  ) 
+  )
 ```
 
 Most United Airlines flights occurred at temperatures between approximately 30°F and 85°F, with relatively few flights experiencing extremely cold or hot conditions. The mean and median temperatures were approximately 57°F and 58°F, respectively. The distribution of flights across temperature was generally uniform.
@@ -526,7 +515,7 @@ temperature_data %>%
     title = "Temperature vs Departure Delay",
     x = "Temperature (°F)",
     y = "Departure Delay (Minutes)"
-  ) 
+  )
 ```
 
 No strong linear relationship between temperature and departure delay. 
@@ -666,15 +655,3 @@ visibility_summary %>%
 
 ### Visibility | Exploratory Findings
 Flights operating under reduced visibility experienced longer average departure delays of approximately 17.03 minutes, compared with 11.08 minutes under normal recorded visibility. Additionally, the proportion of late departures was also higher under reduced visibility, at 51.31%, compared with 46.08% under normal visibility. Similarly, very late departures occurred in 17.47% of flights under reduced visibility, compared with 12.23% under normal visibility. Overall, the results suggest that reduced visibility is associated with longer and more frequent departure delays. 
-
-
-
-
-
-
-
-
-
-
-
-
